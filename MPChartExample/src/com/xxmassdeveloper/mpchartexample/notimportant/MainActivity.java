@@ -1,337 +1,204 @@
 
 package com.xxmassdeveloper.mpchartexample.notimportant;
 
-import android.app.Activity;
+
+import android.Manifest;
+import android.annotation.TargetApi;
+import android.app.AppOpsManager;
+import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.WindowManager;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ListView;
 
-import com.github.mikephil.charting.utils.Utils;
-import com.xxmassdeveloper.mpchartexample.AnotherBarActivity;
-import com.xxmassdeveloper.mpchartexample.BarChartActivity;
-import com.xxmassdeveloper.mpchartexample.BarChartActivityMultiDataset;
-import com.xxmassdeveloper.mpchartexample.BarChartActivitySinus;
-import com.xxmassdeveloper.mpchartexample.BarChartPositiveNegative;
-import com.xxmassdeveloper.mpchartexample.BubbleChartActivity;
-import com.xxmassdeveloper.mpchartexample.CandleStickChartActivity;
-import com.xxmassdeveloper.mpchartexample.CombinedChartActivity;
-import com.xxmassdeveloper.mpchartexample.CubicLineChartActivity;
-import com.xxmassdeveloper.mpchartexample.DynamicalAddingActivity;
-import com.xxmassdeveloper.mpchartexample.FilledLineActivity;
-import com.xxmassdeveloper.mpchartexample.HalfPieChartActivity;
-import com.xxmassdeveloper.mpchartexample.HorizontalBarChartActivity;
-import com.xxmassdeveloper.mpchartexample.InvertedLineChartActivity;
-import com.xxmassdeveloper.mpchartexample.LineChartActivity1;
-import com.xxmassdeveloper.mpchartexample.LineChartActivity2;
-import com.xxmassdeveloper.mpchartexample.LineChartActivityColored;
-import com.xxmassdeveloper.mpchartexample.LineChartTime;
-import com.xxmassdeveloper.mpchartexample.ListViewBarChartActivity;
-import com.xxmassdeveloper.mpchartexample.ListViewMultiChartActivity;
-import com.xxmassdeveloper.mpchartexample.MultiLineChartActivity;
-import com.xxmassdeveloper.mpchartexample.PerformanceLineChart;
-import com.xxmassdeveloper.mpchartexample.PieChartActivity;
-import com.xxmassdeveloper.mpchartexample.PiePolylineChartActivity;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.highlight.Highlight;
+import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
+import  com.xxmassdeveloper.mpchartexample.fragments.*;
+
+
 import com.xxmassdeveloper.mpchartexample.R;
-import com.xxmassdeveloper.mpchartexample.RadarChartActivitry;
-import com.xxmassdeveloper.mpchartexample.RealtimeLineChartActivity;
-import com.xxmassdeveloper.mpchartexample.ScatterChartActivity;
-import com.xxmassdeveloper.mpchartexample.ScrollViewActivity;
-import com.xxmassdeveloper.mpchartexample.StackedBarActivity;
-import com.xxmassdeveloper.mpchartexample.StackedBarActivityNegative;
-import com.xxmassdeveloper.mpchartexample.fragments.SimpleChartDemo;
-import com.xxmassdeveloper.mpchartexample.realm.RealmMainActivity;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
-public class MainActivity extends Activity implements OnItemClickListener {
+import netstatbackend.NotificationMonitorService;
+import netstatbackend.StatsManager;
+import netstatbackend.UsageStat;
+
+
+import android.os.Bundle;
+import android.provider.Settings;
+import android.support.annotation.NonNull;
+import android.support.design.widget.TabLayout;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.util.Log;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+
+
+public class MainActivity extends AppCompatActivity  {
+
+    private static final int READ_PHONE_STATE_REQUEST = 37;
+    private Toolbar toolbar;
+    private TabLayout tabLayout;
+    private ViewPager viewPager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_main);
 
-        setTitle("MPAndroidChart Example");
+        Intent i = new Intent(this,NotificationMonitorService.class);
+        startService(i);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        requestPermissions();
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        // initialize the utilities
-        Utils.init(this);
+        viewPager = (ViewPager) findViewById(R.id.viewpager);
+        setupViewPager(viewPager);
 
-        ArrayList<ContentItem> objects = new ArrayList<ContentItem>();
+        tabLayout = (TabLayout) findViewById(R.id.tabs);
+        tabLayout.setupWithViewPager(viewPager);
+    }
 
-        objects.add(new ContentItem("Line Chart", "A simple demonstration of the linechart."));
-        objects.add(new ContentItem("Line Chart (Dual YAxis)",
-                "Demonstration of the linechart with dual y-axis."));
-        objects.add(new ContentItem("Bar Chart", "A simple demonstration of the bar chart."));
-        objects.add(new ContentItem("Horizontal Bar Chart",
-                "A simple demonstration of the horizontal bar chart."));
-        objects.add(new ContentItem("Combined Chart",
-                "Demonstrates how to create a combined chart (bar and line in this case)."));
-        objects.add(new ContentItem("Pie Chart", "A simple demonstration of the pie chart."));
-        objects.add(new ContentItem("Pie Chart with value lines", "A simple demonstration of the pie chart with polyline notes."));
-        objects.add(new ContentItem("Scatter Chart", "A simple demonstration of the scatter chart."));
-        objects.add(new ContentItem("Bubble Chart", "A simple demonstration of the bubble chart."));
-        objects.add(new ContentItem("Stacked Bar Chart",
-                "A simple demonstration of a bar chart with stacked bars."));
-        objects.add(new ContentItem("Stacked Bar Chart Negative",
-                "A simple demonstration of stacked bars with negative and positive values."));
-        objects.add(new ContentItem("Another Bar Chart",
-                "Implementation of a BarChart that only shows values at the bottom."));
-        objects.add(new ContentItem("Multiple Lines Chart",
-                "A line chart with multiple DataSet objects. One color per DataSet."));
-        objects.add(new ContentItem("Multiple Bars Chart",
-                "A bar chart with multiple DataSet objects. One multiple colors per DataSet."));
-        objects.add(new ContentItem(
-                "Charts in ViewPager Fragments",
-                "Demonstration of charts inside ViewPager Fragments. In this example the focus was on the design and look and feel of the chart."));
-        objects.add(new ContentItem(
-                "BarChart inside ListView",
-                "Demonstrates the usage of a BarChart inside a ListView item."));
-        objects.add(new ContentItem(
-                "Multiple charts inside ListView",
-                "Demonstrates the usage of different chart types inside a ListView."));
-        objects.add(new ContentItem(
-                "Inverted Line Chart",
-                "Demonstrates the feature of inverting the y-axis."));
-        objects.add(new ContentItem(
-                "Candle Stick Chart",
-                "Demonstrates usage of the CandleStickChart."));
-        objects.add(new ContentItem(
-                "Cubic Line Chart",
-                "Demonstrates cubic lines in a LineChart."));
-        objects.add(new ContentItem(
-                "Radar Chart",
-                "Demonstrates the use of a spider-web like (net) chart."));
-        objects.add(new ContentItem(
-                "Colored Line Chart",
-                "Shows a LineChart with different background and line color."));
-        objects.add(new ContentItem(
-                "Realtime Chart",
-                "This chart is fed with new data in realtime. It also restrains the view on the x-axis."));
-        objects.add(new ContentItem(
-                "Dynamical data adding",
-                "This Activity demonstrates dynamical adding of Entries and DataSets (real time graph)."));
-        objects.add(new ContentItem(
-                "Performance Line Chart",
-                "Renders up to 30.000 objects smoothly."));
-        objects.add(new ContentItem(
-                "Sinus Bar Chart",
-                "A Bar Chart plotting the sinus function with 8.000 values."));
-        objects.add(new ContentItem(
-                "Chart in ScrollView",
-                "This demonstrates how to use a chart inside a ScrollView."));
-        objects.add(new ContentItem(
-                "BarChart positive / negative",
-                "This demonstrates how to create a BarChart with positive and negative values in different colors."));
+    private void setupViewPager(ViewPager viewPager) {
+        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
+        adapter.addFragment(new OneFragment(), "DATA");
+        adapter.addFragment(new SecondFragment(), "ACTION");
 
-        ContentItem realm = new ContentItem(
-                "Realm.io Database",
-                "This demonstrates how to use this library with Realm.io mobile database.");
-        objects.add(realm);
-
-        ContentItem time = new ContentItem(
-                "Time Chart",
-                "Simple demonstration of a time-chart. This chart draws one line entry per hour originating from the current time in milliseconds.");
-        time.isNew = true;
-        objects.add(time);
-        objects.add(new ContentItem(
-                "Filled LineChart",
-                "This demonstrates how to fill an area between two LineDataSets."));
-        objects.add(new ContentItem(
-                "Half PieChart",
-                "This demonstrates how to create a 180 degree PieChart."));
-
-        MyAdapter adapter = new MyAdapter(this, objects);
-
-        ListView lv = (ListView) findViewById(R.id.listView1);
-        lv.setAdapter(adapter);
-
-        lv.setOnItemClickListener(this);
+        viewPager.setAdapter(adapter);
     }
 
     @Override
-    public void onItemClick(AdapterView<?> av, View v, int pos, long arg3) {
+    @TargetApi(Build.VERSION_CODES.M)
+    protected void onResume() {
+        super.onResume();
+        if (!hasPermissionToReadPhoneStats()) {
+            requestPhoneStateStats();
+            return;
+        }
+    //    initTextViews();
+     //   fillData(packageNameEd.getText().toString());
+    }
 
-        Intent i;
+    private void requestPermissions() {
+        if (!hasPermissionToReadNetworkHistory()) {
+            requestReadNetworkHistoryAccess();
+            return;
+        }
+        if (!hasPermissionToReadPhoneStats()) {
+            requestPhoneStateStats();
+            return;
+        }
+        StatsManager manager = new StatsManager(this.getApplicationContext());
+        try {
+            SimpleDateFormat formatter = new SimpleDateFormat("dd-MMM-yyyy");
+            Date date = (Date) formatter.parse("12-December-2012");
+            long mills = date.getTime();
+            long mills2 = ((Date)formatter.parse("27-October-2016")).getTime();
+            ArrayList<UsageStat> stats = manager.getUsageStats("com.xxmassdeveloper.mpchartexample",mills, mills2);
+        }
+        catch (ParseException pe){
+            Log.e("Error",pe.getMessage());
+        }
+    }
 
-        switch (pos) {
-            case 0:
-                i = new Intent(this, LineChartActivity1.class);
-                startActivity(i);
-                break;
-            case 1:
-                i = new Intent(this, LineChartActivity2.class);
-                startActivity(i);
-                break;
-            case 2:
-                i = new Intent(this, BarChartActivity.class);
-                startActivity(i);
-                break;
-            case 3:
-                i = new Intent(this, HorizontalBarChartActivity.class);
-                startActivity(i);
-                break;
-            case 4:
-                i = new Intent(this, CombinedChartActivity.class);
-                startActivity(i);
-                break;
-            case 5:
-                i = new Intent(this, PieChartActivity.class);
-                startActivity(i);
-                break;
-            case 6:
-                i = new Intent(this, PiePolylineChartActivity.class);
-                startActivity(i);
-                break;
-            case 7:
-                i = new Intent(this, ScatterChartActivity.class);
-                startActivity(i);
-                break;
-            case 8:
-                i = new Intent(this, BubbleChartActivity.class);
-                startActivity(i);
-                break;
-            case 9:
-                i = new Intent(this, StackedBarActivity.class);
-                startActivity(i);
-                break;
-            case 10:
-                i = new Intent(this, StackedBarActivityNegative.class);
-                startActivity(i);
-                break;
-            case 11:
-                i = new Intent(this, AnotherBarActivity.class);
-                startActivity(i);
-                break;
-            case 12:
-                i = new Intent(this, MultiLineChartActivity.class);
-                startActivity(i);
-                break;
-            case 13:
-                i = new Intent(this, BarChartActivityMultiDataset.class);
-                startActivity(i);
-                break;
-            case 14:
-                i = new Intent(this, SimpleChartDemo.class);
-                startActivity(i);
-                break;
-            case 15:
-                i = new Intent(this, ListViewBarChartActivity.class);
-                startActivity(i);
-                break;
-            case 16:
-                i = new Intent(this, ListViewMultiChartActivity.class);
-                startActivity(i);
-                break;
-            case 17:
-                i = new Intent(this, InvertedLineChartActivity.class);
-                startActivity(i);
-                break;
-            case 18:
-                i = new Intent(this, CandleStickChartActivity.class);
-                startActivity(i);
-                break;
-            case 19:
-                i = new Intent(this, CubicLineChartActivity.class);
-                startActivity(i);
-                break;
-            case 20:
-                i = new Intent(this, RadarChartActivitry.class);
-                startActivity(i);
-                break;
-            case 21:
-                i = new Intent(this, LineChartActivityColored.class);
-                startActivity(i);
-                break;
-            case 22:
-                i = new Intent(this, RealtimeLineChartActivity.class);
-                startActivity(i);
-                break;
-            case 23:
-                i = new Intent(this, DynamicalAddingActivity.class);
-                startActivity(i);
-                break;
-            case 24:
-                i = new Intent(this, PerformanceLineChart.class);
-                startActivity(i);
-                break;
-            case 25:
-                i = new Intent(this, BarChartActivitySinus.class);
-                startActivity(i);
-                break;
-            case 26:
-                i = new Intent(this, ScrollViewActivity.class);
-                startActivity(i);
-                break;
-            case 27:
-                i = new Intent(this, BarChartPositiveNegative.class);
-                startActivity(i);
-                break;
-            case 28:
-                i = new Intent(this, RealmMainActivity.class);
-                startActivity(i);
-                break;
-            case 29:
-                i = new Intent(this, LineChartTime.class);
-                startActivity(i);
-                break;
-            case 30:
-                i = new Intent(this, FilledLineActivity.class);
-                startActivity(i);
-                break;
-            case 31:
-                i = new Intent(this, HalfPieChartActivity.class);
-                startActivity(i);
-                break;
+    private boolean hasPermissionToReadPhoneStats() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_DENIED) {
+            return false;
+        } else {
+            return true;
+        }
+    }
 
+    private void requestPhoneStateStats() {
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_PHONE_STATE}, READ_PHONE_STATE_REQUEST);
+    }
+
+    private boolean hasPermissionToReadNetworkHistory() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            return true;
+        }
+        final AppOpsManager appOps = (AppOpsManager) getSystemService(Context.APP_OPS_SERVICE);
+        int mode = appOps.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS,
+                android.os.Process.myUid(), getPackageName());
+        if (mode == AppOpsManager.MODE_ALLOWED) {
+            return true;
+        }
+        appOps.startWatchingMode(AppOpsManager.OPSTR_GET_USAGE_STATS,
+                getApplicationContext().getPackageName(),
+                new AppOpsManager.OnOpChangedListener() {
+                    @Override
+                    @TargetApi(Build.VERSION_CODES.M)
+                    public void onOpChanged(String op, String packageName) {
+                        int mode = appOps.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS,
+                                android.os.Process.myUid(), getPackageName());
+                        if (mode != AppOpsManager.MODE_ALLOWED) {
+                            return;
+                        }
+                        appOps.stopWatchingMode(this);
+                        Intent intent = new Intent(MainActivity.this, MainActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                        getApplicationContext().startActivity(intent);
+                    }
+                });
+        requestReadNetworkHistoryAccess();
+        return false;
+    }
+
+    private void requestReadNetworkHistoryAccess() {
+        Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
+        startActivity(intent);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+         //   fillData(packageNameEd.getText().toString());
+            Log.i("Info","Access granted");
+        }
+    }
+    class ViewPagerAdapter extends FragmentPagerAdapter {
+        private final List<Fragment> mFragmentList = new ArrayList<>();
+        private final List<String> mFragmentTitleList = new ArrayList<>();
+
+        public ViewPagerAdapter(FragmentManager manager) {
+            super(manager);
         }
 
-        overridePendingTransition(R.anim.move_right_in_activity, R.anim.move_left_out_activity);
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-
-        Intent i = null;
-
-        switch (item.getItemId()) {
-            case R.id.viewGithub:
-                i = new Intent(Intent.ACTION_VIEW);
-                i.setData(Uri.parse("https://github.com/PhilJay/MPAndroidChart"));
-                startActivity(i);
-                break;
-            case R.id.report:
-                i = new Intent(Intent.ACTION_SENDTO, Uri.fromParts(
-                        "mailto", "philjay.librarysup@gmail.com", null));
-                i.putExtra(Intent.EXTRA_SUBJECT, "MPAndroidChart Issue");
-                i.putExtra(Intent.EXTRA_TEXT, "Your error report here...");
-                startActivity(Intent.createChooser(i, "Report Problem"));
-                break;
-            case R.id.blog:
-                i = new Intent(Intent.ACTION_VIEW);
-                i.setData(Uri.parse("http://www.xxmassdeveloper.com"));
-                startActivity(i);
-                break;
-            case R.id.website:
-                i = new Intent(Intent.ACTION_VIEW);
-                i.setData(Uri.parse("http://at.linkedin.com/in/philippjahoda"));
-                startActivity(i);
-                break;
+        @Override
+        public Fragment getItem(int position) {
+            return mFragmentList.get(position);
         }
 
-        return true;
+        @Override
+        public int getCount() {
+            return mFragmentList.size();
+        }
+
+        public void addFragment(Fragment fragment, String title) {
+            mFragmentList.add(fragment);
+            mFragmentTitleList.add(title);
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return mFragmentTitleList.get(position);
+        }
+
+
     }
 }
