@@ -5,6 +5,7 @@ package com.xxmassdeveloper.mpchartexample.notimportant;
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.AppOpsManager;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
@@ -42,6 +43,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -71,6 +73,7 @@ public class MainActivity extends AppCompatActivity  {
         if(!NotificationMonitorService.isNotificationAccessEnabled) {
             Intent intent = new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS");
             startActivity(intent);
+
         }
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -82,7 +85,8 @@ public class MainActivity extends AppCompatActivity  {
 
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
-        getUsageStats();
+
+        statusBarNotify();
     }
 
     private void getUsageStats() {
@@ -112,6 +116,25 @@ public class MainActivity extends AppCompatActivity  {
             Log.e("NameNotFoundException",exception.getMessage());
         }
         Log.d("Stats size","Update stats collected for "+stats.size()+" apps");
+    }
+
+    private void statusBarNotify() {
+
+        NotificationCompat.Builder mBuilder =
+                (NotificationCompat.Builder) new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.ic_launcher)
+                        .setContentTitle("My Notification")
+                        .setContentText("Hello World!")
+                        .setTicker("notification is displayed !!");
+
+        int mNotificationId = 001;
+
+        // Gets an instance of the NotificationManager service
+        NotificationManager mNotifyMgr =
+                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+        // Builds the notification and issues it.
+        mNotifyMgr.notify(mNotificationId, mBuilder.build());
     }
 
     private void addDatabaseEntries(){
@@ -148,7 +171,6 @@ public class MainActivity extends AppCompatActivity  {
     }
 
     @Override
-    @TargetApi(Build.VERSION_CODES.M)
     protected void onResume() {
         super.onResume();
         if (!hasPermissionToReadPhoneStats()) {
@@ -179,6 +201,7 @@ public class MainActivity extends AppCompatActivity  {
         catch (ParseException pe){
             Log.e("Error",pe.getMessage());
         }
+        getUsageStats();
     }
 
     private boolean hasPermissionToReadPhoneStats() {

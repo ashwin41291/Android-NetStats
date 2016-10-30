@@ -142,7 +142,7 @@ public class AppStatsRepository {
                 String subscriberId = getSubscriberId(context,ConnectivityManager.TYPE_MOBILE);
                 NetworkStats buckets = manager.querySummary(ConnectivityManager.TYPE_WIFI,"",updateTime,currentTime);
                 while(buckets.hasNextBucket()){
-                    NetworkStats.Bucket bucket=null;
+                    NetworkStats.Bucket bucket=new NetworkStats.Bucket();
                     buckets.getNextBucket(bucket);
                     if(bucket.getUid()==uid) {
                         NetworkStatistic stat = new NetworkStatistic();
