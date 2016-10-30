@@ -8,9 +8,13 @@ import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.util.Log;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by sridh on 10/21/2016.
@@ -21,6 +25,22 @@ public class NotificationMonitorService extends NotificationListenerService {
 
     Context context;
     NLServiceReceiver nlservicereciver;
+
+    public static boolean isNotificationAccessEnabled = false;
+
+    @Override
+    public IBinder onBind(Intent mIntent) {
+        IBinder mIBinder = super.onBind(mIntent);
+        isNotificationAccessEnabled = true;
+        return mIBinder;
+    }
+
+    @Override
+    public boolean onUnbind(Intent mIntent) {
+        boolean mOnUnbind = super.onUnbind(mIntent);
+        isNotificationAccessEnabled = false;
+        return mOnUnbind;
+    }
 
     @Override
     public void onCreate() {
@@ -34,16 +54,16 @@ public class NotificationMonitorService extends NotificationListenerService {
     }
 
     @Override
-
     public void onNotificationPosted(StatusBarNotification sbn) {
         try {
 
             Log.i("Info","**********  onNotificationPosted");
             Log.i("Info","ID :" + sbn.getId() + "\t" + sbn.getNotification().tickerText + "\t" + sbn.getPackageName());
-            Intent i = new  Intent("com.netstatbackend.notificationservicelistener");
-            i.putExtra("notification_event","onNotificationPosted :" + sbn.getPackageName() + "\n");
-            sendBroadcast(i);
-
+            String pack = sbn.getPackageName();
+            String ticker = sbn.getNotification().tickerText.toString();
+            Bundle extras = sbn.getNotification().extras;
+            String title = extras.getString("android.title");
+            String text = extras.getCharSequence("android.text").toString();
         }
         catch (Exception nnfe)
         {

@@ -1,11 +1,18 @@
 package netstatbackend;
 
 import android.app.Activity;
+import android.app.usage.NetworkStats;
+import android.app.usage.NetworkStatsManager;
+import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
 import android.net.TrafficStats;
+import android.os.RemoteException;
 import android.os.SystemClock;
+import android.telephony.TelephonyManager;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -20,13 +27,17 @@ public class AppStatsRepository {
     private PackageManager manager;
     private  ArrayList<AppObject> appObjects;
     private  Activity activity;
+    private  Context context;
 
     public AppStatsRepository(Activity activity){
        this.activity = activity;
         manager = activity.getPackageManager();
     }
 
-
+    public AppStatsRepository(Context context){
+        this.context = context;
+        manager = context.getPackageManager();
+    }
     public ArrayList<AppObject> getInstalledApplications(){
         appObjects = new ArrayList<>();
         List<ApplicationInfo> packages = manager.getInstalledApplications(PackageManager.GET_META_DATA);
@@ -70,4 +81,84 @@ public class AppStatsRepository {
         return new Date(seconds);
     }
 
+    public NetworkStatistic getDataStats(int uid,long updateTime){
+        NetworkStatsManager manager = (NetworkStatsManager)context.getSystemService(Context.NETWORK_STATS_SERVICE);
+      //  Context context = this.activity.getApplicationContext();
+        NetworkStatistic mobileStats = getMobileBytes(manager,uid,updateTime);
+        NetworkStatistic wifiStats = getWifiBytes(manager,uid,updateTime);
+        NetworkStatistic result = new NetworkStatistic();
+        result.uid = uid;
+        result.usageInBytes = (mobileStats!=null?mobileStats.usageInBytes:0)+ (wifiStats!=null?wifiStats.usageInBytes:0);
+        result.startDate = updateTime;
+        result.endDate = System.currentTimeMillis();
+        return result;
+    }
+
+    private String getSubscriberId(Context context, int networkType) {
+        if (ConnectivityManager.TYPE_MOBILE == networkType) {
+            TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+            return tm.getSubscriberId();
+        }
+        return "";
+    }
+
+
+
+    private NetworkStatistic getMobileBytes(NetworkStatsManager manager,int uid,long updateTime){
+        try{
+            if(manager!=null){
+                long currentTime = System.currentTimeMillis();
+                ArrayList<NetworkStatistic> statistics = new ArrayList<>();
+              //  Context context = this.activity.getApplicationContext();
+                String subscriberId = getSubscriberId(context,ConnectivityManager.TYPE_MOBILE);
+                NetworkStats buckets = manager.querySummary(ConnectivityManager.TYPE_MOBILE,subscriberId,updateTime,currentTime);
+                while(buckets.hasNextBucket()){
+                    NetworkStats.Bucket bucket = new NetworkStats.Bucket();
+                    boolean filled = buckets.getNextBucket(bucket);
+                    if(filled && bucket.getUid()==uid) {
+                        NetworkStatistic stat = new NetworkStatistic();
+                        stat.uid = uid;
+                        stat.usageInBytes = bucket.getRxBytes() + bucket.getTxBytes();
+                        stat.startDate = bucket.getStartTimeStamp();
+                        stat.endDate = bucket.getEndTimeStamp();
+                        return stat;
+                    }
+                }
+                return null;
+            }
+        }
+        catch (RemoteException exception){
+            Log.e("RemoteException",exception.getMessage());
+        }
+        return null;
+    }
+
+    private NetworkStatistic getWifiBytes(NetworkStatsManager manager,int uid,long updateTime){
+        try{
+            if(manager!=null){
+                long currentTime = System.currentTimeMillis();
+                ArrayList<NetworkStatistic> statistics = new ArrayList<>();
+             //   Context context = this.activity.getApplicationContext();
+                String subscriberId = getSubscriberId(context,ConnectivityManager.TYPE_MOBILE);
+                NetworkStats buckets = manager.querySummary(ConnectivityManager.TYPE_WIFI,"",updateTime,currentTime);
+                while(buckets.hasNextBucket()){
+                    NetworkStats.Bucket bucket=null;
+                    buckets.getNextBucket(bucket);
+                    if(bucket.getUid()==uid) {
+                        NetworkStatistic stat = new NetworkStatistic();
+                        stat.uid = uid;
+                        stat.usageInBytes = bucket.getRxBytes() + bucket.getTxBytes();
+                        stat.startDate = bucket.getStartTimeStamp();
+                        stat.endDate = bucket.getEndTimeStamp();
+                        return stat;
+                    }
+                }
+                return null;
+            }
+        }
+        catch (RemoteException exception){
+            Log.e("RemoteException",exception.getMessage());
+        }
+        return null;
+    }
 }

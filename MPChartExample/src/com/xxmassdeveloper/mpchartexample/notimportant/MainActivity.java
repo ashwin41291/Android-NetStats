@@ -7,6 +7,8 @@ import android.annotation.TargetApi;
 import android.app.AppOpsManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -23,13 +25,17 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
+import netstatbackend.AppStatsRepository;
+import netstatbackend.NetworkStatistic;
 import netstatbackend.NotificationMonitorService;
+import netstatbackend.Persistence;
 import netstatbackend.StatsManager;
 import netstatbackend.UsageStat;
 
 
 import android.os.Bundle;
 import android.provider.Settings;
+import android.service.notification.NotificationListenerService;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
@@ -58,9 +64,14 @@ public class MainActivity extends AppCompatActivity  {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        addDatabaseEntries();
         Intent i = new Intent(this,NotificationMonitorService.class);
+
         startService(i);
+        if(!NotificationMonitorService.isNotificationAccessEnabled) {
+            Intent intent = new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS");
+            startActivity(intent);
+        }
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         requestPermissions();
@@ -71,8 +82,63 @@ public class MainActivity extends AppCompatActivity  {
 
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
+        getUsageStats();
     }
 
+    private void getUsageStats() {
+        PackageManager manager = this.getPackageManager();
+        List<PackageInfo> apps = manager.getInstalledPackages(PackageManager.GET_PERMISSIONS|PackageManager.GET_PROVIDERS);
+        ArrayList<NetworkStatistic> stats = new ArrayList<>();
+        try {
+            AppStatsRepository repository = new AppStatsRepository(this.getApplicationContext());
+            for (PackageInfo app : apps) {
+                ApplicationInfo info = manager.getApplicationInfo(app.packageName,0);
+                if (app.requestedPermissions != null) {
+
+                    for(int i=0;i<app.requestedPermissions.length;i++) {
+
+                        if(app.requestedPermissions[i].equals("android.permission.INTERNET")) {
+                            Log.d("permissions ",app.packageName);
+                            long lastUpdateTime = manager.getPackageInfo(app.packageName, 0).lastUpdateTime;
+                            int id = manager.getApplicationInfo(app.packageName, 0).uid;
+                            NetworkStatistic stat = repository.getDataStats(id, lastUpdateTime);
+                            stats.add(stat);
+                        }
+                    }
+                }
+            }
+        }
+        catch (PackageManager.NameNotFoundException exception){
+            Log.e("NameNotFoundException",exception.getMessage());
+        }
+        Log.d("Stats size","Update stats collected for "+stats.size()+" apps");
+    }
+
+    private void addDatabaseEntries(){
+        try {
+            Persistence persistence = new Persistence(this.getApplicationContext());
+            PackageManager manager = this.getPackageManager();
+            List<PackageInfo> apps = manager.getInstalledPackages(PackageManager.GET_PERMISSIONS|PackageManager.GET_PROVIDERS);
+            for (PackageInfo app : apps) {
+                String updateTime = String.valueOf(manager.getPackageInfo(app.packageName, 0).lastUpdateTime);
+                String[] permissions = app.requestedPermissions;
+                ApplicationInfo info = manager.getApplicationInfo(app.packageName,0);
+
+                if(permissions!=null && info.name!=null) {
+                    for(int i=0;i<permissions.length;i++) {
+                        if(permissions[i].equals("android.permission.INTERNET")) {
+
+                            Log.v(app.packageName, "Update time for app is " + app.lastUpdateTime);
+                            persistence.addToDb(app.packageName, updateTime);
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+    }
     private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
         adapter.addFragment(new OneFragment(), "DATA");
