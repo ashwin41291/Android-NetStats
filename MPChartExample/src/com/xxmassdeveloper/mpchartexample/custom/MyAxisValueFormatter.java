@@ -16,7 +16,7 @@ public class MyAxisValueFormatter implements IAxisValueFormatter
 
     @Override
     public String getFormattedValue(float value, AxisBase axis) {
-        return mFormat.format(value) + " $";
+        return mFormat.format(value)+" MB";
     }
 
     @Override

@@ -60,20 +60,17 @@ public class Persistence {
         else
             return true;
     }
-    public boolean addToDb(NetworkStat stat){
+    public boolean addToDb(NetworkStatistic stat){
         try {
             Log.i("Saving", "Saving to database");
             SQLiteDatabase db = sqlHelper.getWritableDatabase();
             ContentValues values = new ContentValues();
-            values.put(NetStatsContract.NetStatsEntry.COLUMN_NAME_APPNAME, stat.app.appName);
-            values.put(NetStatsContract.NetStatsEntry.COLUMN_NAME_STARTTIME, stat.startTime);
-            values.put(NetStatsContract.NetStatsEntry.COLUMN_NAME_ENDTIME, stat.endTime);
-            values.put(NetStatsContract.NetStatsEntry.COLUMN_NAME_PACKAGENAME, stat.app.packageName);
-            values.put(NetStatsContract.NetStatsEntry.COLUMN_NAME_TOTALUSAGEINBYTES, stat.totalUsageInBytes);
-            if (stat.isUpdate)
-                values.put(NetStatsContract.NetStatsEntry.COLUMN_NAME_ISUPDATE, 1);
-            else
-                values.put(NetStatsContract.NetStatsEntry.COLUMN_NAME_ISUPDATE, 0);
+            values.put(NetStatsContract.NetStatsEntry.COLUMN_NAME_APPNAME, stat.appName);
+            values.put(NetStatsContract.NetStatsEntry.COLUMN_NAME_STARTTIME, stat.startDate);
+            values.put(NetStatsContract.NetStatsEntry.COLUMN_NAME_ENDTIME, stat.endDate);
+            values.put(NetStatsContract.NetStatsEntry.COLUMN_NAME_PACKAGENAME, stat.packageName);
+            values.put(NetStatsContract.NetStatsEntry.COLUMN_NAME_TOTALUSAGEINBYTES, stat.usageInBytes);
+
             long rowId = db.insert(NetStatsContract.NetStatsEntry.TABLE_NAME, null, values);
             if (rowId == -1)
                 return false;
@@ -85,7 +82,7 @@ public class Persistence {
             return true;
     }
 
-    public ArrayList<NetworkStat> getStats(AppObject app, boolean update){
+    public ArrayList<NetworkStat> getStats(AppObject app){
         ArrayList<NetworkStat> stats = new ArrayList<>();
         SQLiteDatabase db = sqlHelper.getReadableDatabase();
         String[] projection = {
@@ -93,20 +90,9 @@ public class Persistence {
                 NetStatsContract.NetStatsEntry.COLUMN_NAME_ENDTIME,
                 NetStatsContract.NetStatsEntry.COLUMN_NAME_TOTALUSAGEINBYTES
         };
-        String selection=null;
-        String[] selectionArgs = null;
-        if(update) {
-            selection = NetStatsContract.NetStatsEntry.COLUMN_NAME_PACKAGENAME + "=? and " + NetStatsContract.NetStatsEntry.COLUMN_NAME_ISUPDATE + "=?";
-            selectionArgs = new String[2];
-            selectionArgs[0] = app.packageName;
-            selectionArgs[1] = "1";
-        }
-        else {
-            selection = NetStatsContract.NetStatsEntry.COLUMN_NAME_PACKAGENAME + "=?";
-            selectionArgs = new String[2];
-            selectionArgs[0] = app.packageName;
-            selectionArgs[1] = "0";
-        }
+        String selection= NetStatsContract.NetStatsEntry.COLUMN_NAME_PACKAGENAME + "=?";;
+        String[] selectionArgs = {app.packageName};
+
 
         Cursor c = db.query(NetStatsContract.NetStatsEntry.TABLE_NAME,projection,selection,selectionArgs,null,null,null);
         c.moveToFirst();
@@ -119,10 +105,9 @@ public class Persistence {
             stat.totalUsageInBytes = usage;
             stat.startTime = startDate;
             stat.endTime = endDate;
-            stat.isUpdate = update;
             stats.add(stat);
         }while(c.moveToNext());
-
+        c.close();
         return stats;
     }
 

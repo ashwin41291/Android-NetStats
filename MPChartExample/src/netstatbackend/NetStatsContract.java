@@ -20,7 +20,6 @@ public final class NetStatsContract {
         public static final String COLUMN_NAME_STARTTIME = "startTime";
         public static final String COLUMN_NAME_ENDTIME = "endTime";
         public static final String COLUMN_NAME_TOTALUSAGEINBYTES = "totalUsageInBytes";
-        public static final String COLUMN_NAME_ISUPDATE = "isUpdate";
     }
 
 

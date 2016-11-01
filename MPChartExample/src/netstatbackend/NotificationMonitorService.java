@@ -28,7 +28,7 @@ import java.util.List;
 public class NotificationMonitorService extends NotificationListenerService {
 
     Context context;
-    NLServiceReceiver nlservicereciver;
+
     Persistence persistence;
     AppStatsRepository repository;
     HashMap<String,Long> updateTimes;
@@ -54,10 +54,10 @@ public class NotificationMonitorService extends NotificationListenerService {
         super.onCreate();
         isNotificationAccessEnabled=true;
         Log.v("Starting","Starting NotificationMonitorService");
-        nlservicereciver = new NLServiceReceiver();
-        IntentFilter filter = new IntentFilter();
-        filter.addAction("com.netstat.notificationservicelistener");
-        registerReceiver(nlservicereciver,filter);
+       // nlservicereciver = new NLServiceReceiver();
+       // IntentFilter filter = new IntentFilter();
+     //   filter.addAction("com.netstat.notificationservicelistener");
+      //  registerReceiver(nlservicereciver,filter);
         context = getApplicationContext();
         persistence = new Persistence(context);
         repository = new AppStatsRepository(context);
@@ -84,7 +84,8 @@ public class NotificationMonitorService extends NotificationListenerService {
                 for(ApplicationInfo app:apps){
                     if(app.name.equals(title)){
                         long currentTime = System.currentTimeMillis();
-                        NetworkStatistic statistic = repository.getDataStats(app.uid,currentTime);
+                        long lastUpdateTime = manager.getPackageInfo(app.packageName,0).lastUpdateTime;
+                        NetworkStatistic statistic = repository.getDataStats(app.uid,lastUpdateTime);
                         if(statistic.usageInBytes==0)
                         {
                             //Update in DB that app is to be uninstalled
@@ -122,12 +123,15 @@ public class NotificationMonitorService extends NotificationListenerService {
                 List<ApplicationInfo> apps = manager.getInstalledApplications(0);
                 for (ApplicationInfo app : apps) {
                     if (app.name.equals(title)) {
+
                         Long startTime = updateTimes.get(app.packageName);
                         if(startTime!=null){
-                            long endTime = System.currentTimeMillis();
+                            NetworkStatistic stats = repository.getDataStats(app.uid,startTime);
+                            persistence.addToDb(stats);
                             //to get data usage between startTime and endTime and this will be update Data for the app, then add it to DB
                          //   NetworkStatistic statistic = repository.getDataStats(app.uid,)
                         }
+                        break;
                     }
                 }
             }
@@ -137,40 +141,5 @@ public class NotificationMonitorService extends NotificationListenerService {
         }
     }
 
-    class NLServiceReceiver extends BroadcastReceiver {
 
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            StatusBarNotification[] notifications = NotificationMonitorService.this.getActiveNotifications();
-            for(StatusBarNotification sbn:notifications) {
-                String pack = sbn.getPackageName();
-                String ticker = sbn.getNotification().tickerText.toString();
-                Bundle extras = sbn.getNotification().extras;
-                String title = extras.getString("android.title");
-                String text = extras.getCharSequence("android.text").toString();
-                Log.i("Title", title);
-                Log.i("Text", text);
-                UsageStatsManager statsManager = (UsageStatsManager) context.getSystemService(Context.USAGE_STATS_SERVICE);
-                PackageManager manager = getPackageManager();
-                boolean isActive = statsManager.isAppInactive(pack);
-                ApplicationInfo info = null;
-                try {
-                    info = manager.getApplicationInfo(pack, 0);
-                }
-                catch (Exception e){
-                    Log.e("Error",e.getMessage());
-                }
-                AppObject obj = new AppObject();
-                obj.applicationIcon = info.loadIcon(manager);
-                obj.uid = info.uid;
-                obj.appName = info.name;
-                obj.packageName = pack;
-                NetworkStat stat = AppStatsRepository.getDataUsage(obj);
-                Persistence persistence = new Persistence(context);
-                boolean result = persistence.addToDb(stat);
-            }
-
-
-        }
-    }
 }

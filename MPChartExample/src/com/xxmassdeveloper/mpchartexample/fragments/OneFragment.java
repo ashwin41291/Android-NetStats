@@ -1,11 +1,15 @@
 package com.xxmassdeveloper.mpchartexample.fragments;
 
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,10 +31,15 @@ import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.github.mikephil.charting.utils.ColorTemplate;
 import com.xxmassdeveloper.mpchartexample.R;
 import com.xxmassdeveloper.mpchartexample.custom.DayAxisValueFormatter;
+import com.xxmassdeveloper.mpchartexample.custom.LongDateStringFormatter;
 import com.xxmassdeveloper.mpchartexample.custom.MyAxisValueFormatter;
 import com.xxmassdeveloper.mpchartexample.custom.XYMarkerView;
 
 import java.util.ArrayList;
+import java.util.List;
+
+import netstatbackend.AppStatsRepository;
+import netstatbackend.NetworkStatistic;
 
 
 public class OneFragment extends Fragment implements SeekBar.OnSeekBarChangeListener,MediaPlayer.OnSeekCompleteListener,OnChartValueSelectedListener{
@@ -38,9 +47,11 @@ public class OneFragment extends Fragment implements SeekBar.OnSeekBarChangeList
     BarChart chart;
     SeekBar mSeekBarX,mSeekBarY;
     Typeface mTfLight;
+    ArrayList<NetworkStatistic> stats ;
 
     public OneFragment() {
         // Required empty public constructor
+        stats = new ArrayList<>();
     }
 
     @Override
@@ -74,7 +85,7 @@ public class OneFragment extends Fragment implements SeekBar.OnSeekBarChangeList
         chart.setDrawGridBackground(false);
         // mChart.setDrawYLabels(false);
 
-        IAxisValueFormatter xAxisFormatter = new DayAxisValueFormatter(chart);
+        IAxisValueFormatter xAxisFormatter = new LongDateStringFormatter();
 
         XAxis xAxis = chart.getXAxis();
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
@@ -119,8 +130,8 @@ public class OneFragment extends Fragment implements SeekBar.OnSeekBarChangeList
         XYMarkerView mv = new XYMarkerView(view.getContext(), xAxisFormatter);
         mv.setChartView(chart); // For bounds control
         chart.setMarker(mv); // Set the marker to the chart
-
-        setData(12, 50);
+        getUsageStats(view);
+    //    setData(12, 50);
 
         // setting data
      //   mSeekBarY.setProgress(50);
@@ -130,41 +141,7 @@ public class OneFragment extends Fragment implements SeekBar.OnSeekBarChangeList
        // mSeekBarX.setOnSeekBarChangeListener(this);
     }
 
-    private void setData(int count, float range) {
 
-        float start = 1f;
-
-        ArrayList<BarEntry> yVals1 = new ArrayList<BarEntry>();
-
-        for (int i = (int) start; i < start + count + 1; i++) {
-            float mult = (range + 1);
-            float val = (float) (Math.random() * mult);
-            yVals1.add(new BarEntry(i, val));
-        }
-
-        BarDataSet set1;
-
-        if (chart.getData() != null &&
-                chart.getData().getDataSetCount() > 0) {
-            set1 = (BarDataSet) chart.getData().getDataSetByIndex(0);
-            set1.setValues(yVals1);
-            chart.getData().notifyDataChanged();
-            chart.notifyDataSetChanged();
-        } else {
-            set1 = new BarDataSet(yVals1, "The year 2017");
-            set1.setColors(ColorTemplate.MATERIAL_COLORS);
-
-            ArrayList<IBarDataSet> dataSets = new ArrayList<IBarDataSet>();
-            dataSets.add(set1);
-
-            BarData data = new BarData(dataSets);
-            data.setValueTextSize(10f);
-            data.setValueTypeface(mTfLight);
-            data.setBarWidth(0.9f);
-
-            chart.setData(data);
-        }
-    }
 
 
     @Override
@@ -202,5 +179,60 @@ public class OneFragment extends Fragment implements SeekBar.OnSeekBarChangeList
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
 
+    }
+
+    private void getUsageStats(View view) {
+        PackageManager manager = view.getContext().getPackageManager();
+        List<PackageInfo> apps = manager.getInstalledPackages(PackageManager.GET_PERMISSIONS|PackageManager.GET_PROVIDERS);
+
+        try {
+            AppStatsRepository repository = new AppStatsRepository(view.getContext());
+            for (PackageInfo app : apps) {
+                ApplicationInfo info = manager.getApplicationInfo(app.packageName,0);
+                if (app.requestedPermissions != null) {
+                    for(int i=0;i<app.requestedPermissions.length;i++) {
+                        if(app.requestedPermissions[i].equals("android.permission.INTERNET")) {
+                            Log.d("permissions ",app.packageName);
+                            long lastUpdateTime = manager.getPackageInfo(app.packageName, 0).lastUpdateTime;
+                            int id = manager.getApplicationInfo(app.packageName, 0).uid;
+                            NetworkStatistic stat = repository.getDataStats(id, lastUpdateTime);
+                            stats.add(stat);
+                        }
+                    }
+                }
+            }
+            fillCharts();
+        }
+        catch (PackageManager.NameNotFoundException exception){
+            Log.e("NameNotFoundException",exception.getMessage());
+        }
+        Log.d("Stats size","Update stats collected for "+stats.size()+" apps");
+    }
+
+    private void fillCharts()
+    {
+        ArrayList<BarEntry> yVals = new ArrayList<>();
+        int i=0;
+        for(NetworkStatistic stat:stats){
+            double usage = stat.usageInBytes;
+
+            BarEntry entry = new BarEntry(i++,(long)(usage/(1024*1024)),"Facebook");
+
+            yVals.add(entry);
+        }
+
+        BarDataSet dataSet = new BarDataSet(yVals,"App usage data");
+        dataSet.setColors(ColorTemplate.MATERIAL_COLORS);
+
+        ArrayList<IBarDataSet> dataSets = new ArrayList<IBarDataSet>();
+        dataSets.add(dataSet);
+
+        BarData data = new BarData(dataSets);
+        data.setValueTextSize(10f);
+        data.setValueTypeface(mTfLight);
+        data.setBarWidth(0.9f);
+
+        chart.setData(data);
+        chart.notifyDataSetChanged();
     }
 }

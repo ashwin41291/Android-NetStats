@@ -89,34 +89,7 @@ public class MainActivity extends AppCompatActivity  {
         statusBarNotify();
     }
 
-    private void getUsageStats() {
-        PackageManager manager = this.getPackageManager();
-        List<PackageInfo> apps = manager.getInstalledPackages(PackageManager.GET_PERMISSIONS|PackageManager.GET_PROVIDERS);
-        ArrayList<NetworkStatistic> stats = new ArrayList<>();
-        try {
-            AppStatsRepository repository = new AppStatsRepository(this.getApplicationContext());
-            for (PackageInfo app : apps) {
-                ApplicationInfo info = manager.getApplicationInfo(app.packageName,0);
-                if (app.requestedPermissions != null) {
 
-                    for(int i=0;i<app.requestedPermissions.length;i++) {
-
-                        if(app.requestedPermissions[i].equals("android.permission.INTERNET")) {
-                            Log.d("permissions ",app.packageName);
-                            long lastUpdateTime = manager.getPackageInfo(app.packageName, 0).lastUpdateTime;
-                            int id = manager.getApplicationInfo(app.packageName, 0).uid;
-                            NetworkStatistic stat = repository.getDataStats(id, lastUpdateTime);
-                            stats.add(stat);
-                        }
-                    }
-                }
-            }
-        }
-        catch (PackageManager.NameNotFoundException exception){
-            Log.e("NameNotFoundException",exception.getMessage());
-        }
-        Log.d("Stats size","Update stats collected for "+stats.size()+" apps");
-    }
 
     private void statusBarNotify() {
 
@@ -190,18 +163,6 @@ public class MainActivity extends AppCompatActivity  {
             requestPhoneStateStats();
             return;
         }
-        StatsManager manager = new StatsManager(this.getApplicationContext());
-        try {
-            SimpleDateFormat formatter = new SimpleDateFormat("dd-MMM-yyyy");
-            Date date = (Date) formatter.parse("12-December-2012");
-            long mills = date.getTime();
-            long mills2 = ((Date)formatter.parse("27-October-2016")).getTime();
-            ArrayList<UsageStat> stats = manager.getUsageStats("com.xxmassdeveloper.mpchartexample",mills, mills2);
-        }
-        catch (ParseException pe){
-            Log.e("Error",pe.getMessage());
-        }
-        getUsageStats();
     }
 
     private boolean hasPermissionToReadPhoneStats() {

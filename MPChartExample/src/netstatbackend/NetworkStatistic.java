@@ -10,4 +10,5 @@ public class NetworkStatistic {
     public long usageInBytes;
     public long startDate;
     public long endDate;
+    public String packageName;
 }
