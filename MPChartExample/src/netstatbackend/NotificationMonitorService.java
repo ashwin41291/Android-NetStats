@@ -86,6 +86,7 @@ public class NotificationMonitorService extends NotificationListenerService {
                         long currentTime = System.currentTimeMillis();
                         long lastUpdateTime = manager.getPackageInfo(app.packageName,0).lastUpdateTime;
                         NetworkStatistic statistic = repository.getDataStats(app.uid,lastUpdateTime);
+
                         if(statistic.usageInBytes==0)
                         {
                             //Update in DB that app is to be uninstalled

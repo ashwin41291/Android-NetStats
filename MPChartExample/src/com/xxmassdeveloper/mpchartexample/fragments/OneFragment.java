@@ -1,12 +1,10 @@
 package com.xxmassdeveloper.mpchartexample.fragments;
 
-import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -14,7 +12,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SeekBar;
-import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.components.Legend;
@@ -25,17 +22,18 @@ import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
+import com.github.mikephil.charting.formatter.LargeValueFormatter;
 import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.github.mikephil.charting.utils.ColorTemplate;
 import com.xxmassdeveloper.mpchartexample.R;
-import com.xxmassdeveloper.mpchartexample.custom.DayAxisValueFormatter;
-import com.xxmassdeveloper.mpchartexample.custom.LongDateStringFormatter;
+import com.xxmassdeveloper.mpchartexample.custom.UIDAppNameFormatter;
 import com.xxmassdeveloper.mpchartexample.custom.MyAxisValueFormatter;
 import com.xxmassdeveloper.mpchartexample.custom.XYMarkerView;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import netstatbackend.AppStatsRepository;
@@ -48,6 +46,7 @@ public class OneFragment extends Fragment implements SeekBar.OnSeekBarChangeList
     SeekBar mSeekBarX,mSeekBarY;
     Typeface mTfLight;
     ArrayList<NetworkStatistic> stats ;
+    public static PackageManager managerInstance;
 
     public OneFragment() {
         // Required empty public constructor
@@ -85,14 +84,14 @@ public class OneFragment extends Fragment implements SeekBar.OnSeekBarChangeList
         chart.setDrawGridBackground(false);
         // mChart.setDrawYLabels(false);
 
-        IAxisValueFormatter xAxisFormatter = new LongDateStringFormatter();
+        IAxisValueFormatter xAxisFormatter = new LargeValueFormatter();
 
         XAxis xAxis = chart.getXAxis();
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xAxis.setTypeface(mTfLight);
         xAxis.setDrawGridLines(false);
-        xAxis.setGranularity(1f); // only intervals of 1 day
-        xAxis.setLabelCount(7);
+      //  xAxis.setGranularity(1f); // only intervals of 1 day
+     //   xAxis.setLabelCount(7);
         xAxis.setValueFormatter(xAxisFormatter);
 
         IAxisValueFormatter custom = new MyAxisValueFormatter();
@@ -129,7 +128,7 @@ public class OneFragment extends Fragment implements SeekBar.OnSeekBarChangeList
 
         XYMarkerView mv = new XYMarkerView(view.getContext(), xAxisFormatter);
         mv.setChartView(chart); // For bounds control
-        chart.setMarker(mv); // Set the marker to the chart
+       chart.setMarker(mv); // Set the marker to the chart
         getUsageStats(view);
     //    setData(12, 50);
 
@@ -183,6 +182,7 @@ public class OneFragment extends Fragment implements SeekBar.OnSeekBarChangeList
 
     private void getUsageStats(View view) {
         PackageManager manager = view.getContext().getPackageManager();
+        managerInstance = manager;
         List<PackageInfo> apps = manager.getInstalledPackages(PackageManager.GET_PERMISSIONS|PackageManager.GET_PROVIDERS);
 
         try {
@@ -196,6 +196,9 @@ public class OneFragment extends Fragment implements SeekBar.OnSeekBarChangeList
                             long lastUpdateTime = manager.getPackageInfo(app.packageName, 0).lastUpdateTime;
                             int id = manager.getApplicationInfo(app.packageName, 0).uid;
                             NetworkStatistic stat = repository.getDataStats(id, lastUpdateTime);
+                            String[] packageNameParts = app.packageName.split("\\.");
+                            stat.appName = packageNameParts[packageNameParts.length-1];
+                            stat.uid = id;
                             stats.add(stat);
                         }
                     }
@@ -211,18 +214,22 @@ public class OneFragment extends Fragment implements SeekBar.OnSeekBarChangeList
 
     private void fillCharts()
     {
+        Collections.sort(stats);
+        List<NetworkStatistic> statsSubset = stats.subList(0,5);
         ArrayList<BarEntry> yVals = new ArrayList<>();
-        int i=0;
-        for(NetworkStatistic stat:stats){
-            double usage = stat.usageInBytes;
+        float i=0;
+        for(NetworkStatistic stat:statsSubset){
+            double usage = stat.usageInBytes/(1024.0*1024.0);
 
-            BarEntry entry = new BarEntry(i++,(long)(usage/(1024*1024)),"Facebook");
+            BarEntry entry = new BarEntry(stat.uid,(float) usage,stat.appName);
+
 
             yVals.add(entry);
         }
 
         BarDataSet dataSet = new BarDataSet(yVals,"App usage data");
         dataSet.setColors(ColorTemplate.MATERIAL_COLORS);
+        dataSet.setValueFormatter(new UIDAppNameFormatter());
 
         ArrayList<IBarDataSet> dataSets = new ArrayList<IBarDataSet>();
         dataSets.add(dataSet);
@@ -231,7 +238,7 @@ public class OneFragment extends Fragment implements SeekBar.OnSeekBarChangeList
         data.setValueTextSize(10f);
         data.setValueTypeface(mTfLight);
         data.setBarWidth(0.9f);
-
+        chart.set
         chart.setData(data);
         chart.notifyDataSetChanged();
     }
