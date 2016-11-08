@@ -34,7 +34,7 @@ public class NetStatsSQLHelper extends SQLiteOpenHelper {
     private static final String SQL_UPDATE_CREATE_ENTRIES = "CREATE TABLE "+UpdateInfo.UpdateInfoEntry.TABLE_NAME+"("+
                                                             UpdateInfo.UpdateInfoEntry._ID+" INTEGER PRIMARY KEY,"+
                                                             UpdateInfo.UpdateInfoEntry.COLUMN_NAME_PACKAGENAME+ TEXT_TYPE+COMMA_SEP+
-                                                            UpdateInfo.UpdateInfoEntry.COLUMN_NAME_UPDATETIME+TEXT_TYPE+")";
+                                                            UpdateInfo.UpdateInfoEntry.COLUMN_NAME_USAGE+REAL_TYPE+")";
 
 
 

@@ -16,7 +16,7 @@ public final class UpdateInfo {
     public static class UpdateInfoEntry implements BaseColumns {
         public static final String TABLE_NAME = "updateInfo";
         public static final String COLUMN_NAME_PACKAGENAME="packageName";
-        public static final String COLUMN_NAME_UPDATETIME = "updateTime";
+        public static final String COLUMN_NAME_USAGE = "usage";
     }
 
 

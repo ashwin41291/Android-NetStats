@@ -82,13 +82,15 @@ public class NotificationMonitorService extends NotificationListenerService {
                 PackageManager manager = context.getPackageManager();
                 List<ApplicationInfo> apps = manager.getInstalledApplications(0);
                 for(ApplicationInfo app:apps){
-                    if(app.name.equals(title)){
+                    if(app.name!=null && app.name.equals(title)){
                         long currentTime = System.currentTimeMillis();
                         long lastUpdateTime = manager.getPackageInfo(app.packageName,0).lastUpdateTime;
                         NetworkStatistic statistic = repository.getDataStats(app.uid,lastUpdateTime);
 
-                        if(statistic.usageInBytes==0)
+                        if(statistic.usageInBytes<=1024*1024)
                         {
+                            Log.v("Alert",app.name+" can be uninstalled or updates can be stopped");
+                            persistence.addVictimAppToDb(app.packageName,statistic.usageInBytes);
                             //Update in DB that app is to be uninstalled
                         }
                         else{

@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity  {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        addDatabaseEntries();
+      // addDatabaseEntries();
         Intent i = new Intent(this,NotificationMonitorService.class);
 
         startService(i);
@@ -110,31 +110,31 @@ public class MainActivity extends AppCompatActivity  {
         mNotifyMgr.notify(mNotificationId, mBuilder.build());
     }
 
-    private void addDatabaseEntries(){
-        try {
-            Persistence persistence = new Persistence(this.getApplicationContext());
-            PackageManager manager = this.getPackageManager();
-            List<PackageInfo> apps = manager.getInstalledPackages(PackageManager.GET_PERMISSIONS|PackageManager.GET_PROVIDERS);
-            for (PackageInfo app : apps) {
-                String updateTime = String.valueOf(manager.getPackageInfo(app.packageName, 0).lastUpdateTime);
-                String[] permissions = app.requestedPermissions;
-                ApplicationInfo info = manager.getApplicationInfo(app.packageName,0);
-
-                if(permissions!=null && info.name!=null) {
-                    for(int i=0;i<permissions.length;i++) {
-                        if(permissions[i].equals("android.permission.INTERNET")) {
-
-                            Log.v(app.packageName, "Update time for app is " + app.lastUpdateTime);
-                            persistence.addToDb(app.packageName, updateTime);
-                        }
-                    }
-                }
-            }
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
-    }
+//    private void addDatabaseEntries(){
+//        try {
+//            Persistence persistence = new Persistence(this.getApplicationContext());
+//            PackageManager manager = this.getPackageManager();
+//            List<PackageInfo> apps = manager.getInstalledPackages(PackageManager.GET_PERMISSIONS|PackageManager.GET_PROVIDERS);
+//            for (PackageInfo app : apps) {
+//                String updateTime = String.valueOf(manager.getPackageInfo(app.packageName, 0).lastUpdateTime);
+//                String[] permissions = app.requestedPermissions;
+//                ApplicationInfo info = manager.getApplicationInfo(app.packageName,0);
+//
+//                if(permissions!=null && info.name!=null) {
+//                    for(int i=0;i<permissions.length;i++) {
+//                        if(permissions[i].equals("android.permission.INTERNET")) {
+//
+//                            Log.v(app.packageName, "Update time for app is " + app.lastUpdateTime);
+//                            persistence.addToDb(app.packageName, updateTime);
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        catch (Exception e){
+//            e.printStackTrace();
+//        }
+//    }
     private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
         adapter.addFragment(new OneFragment(), "DATA");

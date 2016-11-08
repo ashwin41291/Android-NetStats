@@ -238,7 +238,7 @@ public class OneFragment extends Fragment implements SeekBar.OnSeekBarChangeList
         data.setValueTextSize(10f);
         data.setValueTypeface(mTfLight);
         data.setBarWidth(0.9f);
-        chart.set
+       // chart.set
         chart.setData(data);
         chart.notifyDataSetChanged();
     }
