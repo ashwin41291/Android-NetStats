@@ -8,12 +8,11 @@
     android:paddingTop="10dp"
     android:paddingBottom="10dp"
     android:clickable="true"
-    android:background="?android:attr/selectableItemBackground"
     android:orientation="vertical">
 
     <TextView
         android:id="@+id/appName"
-        android:textColor="@drawable/fade_red"
+        android:textColor="#ff0000"
         android:textSize="16dp"
         android:textStyle="bold"
         android:layout_alignParentTop="true"
@@ -22,7 +21,6 @@
 
     <TextView
         android:id="@+id/usage"
-        
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 

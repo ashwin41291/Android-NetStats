@@ -96,17 +96,24 @@ public class Persistence {
                 UpdateInfo.UpdateInfoEntry.COLUMN_NAME_PACKAGENAME,
                 UpdateInfo.UpdateInfoEntry.COLUMN_NAME_USAGE
         };
-        Cursor c = db.query(NetStatsContract.NetStatsEntry.TABLE_NAME,columns,null,null,null,null,null);
-        c.moveToFirst();
-        do{
-            String appName = c.getString(c.getColumnIndex(UpdateInfo.UpdateInfoEntry.COLUMN_NAME_PACKAGENAME));
-            double usage = c.getDouble(c.getColumnIndex(UpdateInfo.UpdateInfoEntry.COLUMN_NAME_USAGE));
-            NetworkStat stat = new NetworkStat();
-            stat.app = new AppObject();
-            stat.app.appName = appName;
-            stat.totalUsageInBytes = usage;
-            stats.add(stat);
-        }while (c.moveToNext());
+        try {
+            Cursor c = db.query(UpdateInfo.UpdateInfoEntry.COLUMN_NAME_USAGE, columns, null, null, null, null, null);
+            c.moveToFirst();
+            do {
+                String appName = c.getString(c.getColumnIndex(UpdateInfo.UpdateInfoEntry.COLUMN_NAME_PACKAGENAME));
+                double usage = c.getDouble(c.getColumnIndex(UpdateInfo.UpdateInfoEntry.COLUMN_NAME_USAGE));
+                NetworkStat stat = new NetworkStat();
+                stat.app = new AppObject();
+                stat.app.appName = appName;
+                stat.totalUsageInBytes = usage;
+                stats.add(stat);
+            } while (c.moveToNext());
+
+            c.close();
+        }
+        catch (Exception e){
+            Log.e("Error",e.getMessage());
+        }
         return stats;
     }
 

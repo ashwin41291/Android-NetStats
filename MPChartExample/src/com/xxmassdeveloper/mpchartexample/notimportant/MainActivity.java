@@ -86,29 +86,11 @@ public class MainActivity extends AppCompatActivity  {
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
 
-        statusBarNotify();
+      //  statusBarNotify();
     }
 
 
 
-    private void statusBarNotify() {
-
-        NotificationCompat.Builder mBuilder =
-                (NotificationCompat.Builder) new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.drawable.ic_launcher)
-                        .setContentTitle("My Notification")
-                        .setContentText("Hello World!")
-                        .setTicker("notification is displayed !!");
-
-        int mNotificationId = 001;
-
-        // Gets an instance of the NotificationManager service
-        NotificationManager mNotifyMgr =
-                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-
-        // Builds the notification and issues it.
-        mNotifyMgr.notify(mNotificationId, mBuilder.build());
-    }
 
 //    private void addDatabaseEntries(){
 //        try {

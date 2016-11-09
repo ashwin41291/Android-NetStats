@@ -1,6 +1,7 @@
 package com.xxmassdeveloper.mpchartexample.custom;
 
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,19 +44,24 @@ public class AppsListAdapter extends RecyclerView.Adapter<AppsListAdapter.ViewHo
     public AppsListAdapter.ViewHolder onCreateViewHolder(ViewGroup parent,
                                                    int viewType) {
         // create a new view
-        View v = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.apps_list_layout, parent, false);
-        // set the view's size, margins, paddings and layout parameters
+        try {
+            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.apps_list_layout, parent, false);
+            // set the view's size, margins, paddings and layout parameters
 
-        ViewHolder vh = new ViewHolder(v);
-        return vh;
+            ViewHolder vh = new ViewHolder(v);
+            return vh;
+        }
+        catch (Exception e){
+            Log.e("Error",e.getMessage());
+        }
+        return null;
     }
 
     // Replace the contents of a view (invoked by the layout manager)
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         NetworkStat obj = this.apps.get(position);
-        holder.appName.setText(obj.app.appName);
+        holder.appName.setText(obj.app.packageName);
         holder.usage.setText(String.valueOf(obj.totalUsageInBytes));
 
     }

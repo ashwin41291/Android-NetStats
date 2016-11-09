@@ -91,6 +91,7 @@ public class AppStatsRepository {
         result.usageInBytes = (mobileStats!=null?mobileStats.usageInBytes:0)+ (wifiStats!=null?wifiStats.usageInBytes:0);
         result.startDate = updateTime;
         result.endDate = System.currentTimeMillis();
+
         return result;
     }
 
@@ -126,10 +127,11 @@ public class AppStatsRepository {
                         return stat;
                     }
                 }
+                buckets.close();
                 return null;
             }
         }
-        catch (RemoteException exception){
+        catch (Exception exception){
             Log.e("RemoteException",exception.getMessage());
         }
         return null;
@@ -155,10 +157,11 @@ public class AppStatsRepository {
                         return stat;
                     }
                 }
+                buckets.close();
                 return null;
             }
         }
-        catch (RemoteException exception){
+        catch (Exception exception){
             Log.e("RemoteException",exception.getMessage());
         }
         return null;
