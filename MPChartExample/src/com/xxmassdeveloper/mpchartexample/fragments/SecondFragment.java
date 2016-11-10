@@ -17,6 +17,7 @@ import android.view.ViewGroup;
 
 import com.xxmassdeveloper.mpchartexample.R;
 import com.xxmassdeveloper.mpchartexample.custom.AppsListAdapter;
+import com.xxmassdeveloper.mpchartexample.custom.UsageListAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +27,7 @@ import netstatbackend.AppStatsRepository;
 import netstatbackend.NetworkStat;
 import netstatbackend.NetworkStatistic;
 import netstatbackend.Persistence;
+import netstatbackend.UsageStat;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -59,12 +61,20 @@ public class SecondFragment extends Fragment {
         mLayoutManager = new LinearLayoutManager(view.getContext());
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-        AsyncTaskRunner task = new AsyncTaskRunner();
+//        AsyncTaskRunner task = new AsyncTaskRunner();
+//        task.execute(view.getContext());
+
+        UsageTaskRunner task = new UsageTaskRunner();
         task.execute(view.getContext());
     }
 
     private void setListData(ArrayList<NetworkStat> appStats){
         AppsListAdapter adapter = new AppsListAdapter(appStats);
+        mRecyclerView.setAdapter(adapter);
+    }
+
+    private void setUsageListData(ArrayList<UsageStat> usageStats){
+        UsageListAdapter adapter = new UsageListAdapter(usageStats);
         mRecyclerView.setAdapter(adapter);
     }
     private class AsyncTaskRunner extends AsyncTask<Context,String,String>{
@@ -111,6 +121,37 @@ public class SecondFragment extends Fragment {
         @Override
         protected void onPostExecute (String result){
             setListData(appStats);
+        }
+    }
+
+    private class UsageTaskRunner extends AsyncTask<Context,String,String>{
+
+        private ArrayList<UsageStat> usageStats;
+        @Override
+        protected String doInBackground(Context... params) {
+            Context context = (Context)params[0];
+            usageStats = new ArrayList<>();
+            try{
+                PackageManager manager = context.getPackageManager();
+                AppStatsRepository repository = new AppStatsRepository(context);
+                List<PackageInfo>  packages = manager.getInstalledPackages(PackageManager.GET_PERMISSIONS|PackageManager.GET_PROVIDERS|PackageManager.GET_META_DATA);
+                for(PackageInfo pack:packages){
+                    ApplicationInfo info = manager.getApplicationInfo(pack.packageName,0);
+                    UsageStat stat = repository.getUsageStat(pack.packageName,pack.lastUpdateTime,System.currentTimeMillis());
+                    stat.appName = manager.getApplicationLabel(info).toString();
+                    stat.icon = manager.getApplicationIcon(info);
+                    usageStats.add(stat);
+                }
+            }
+            catch (Exception e){
+                Log.e("Error",e.getMessage());
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String result){
+            setUsageListData(usageStats);
         }
     }
 

@@ -3,6 +3,8 @@ package netstatbackend;
 import android.app.Activity;
 import android.app.usage.NetworkStats;
 import android.app.usage.NetworkStatsManager;
+import android.app.usage.UsageEvents;
+import android.app.usage.UsageStatsManager;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
@@ -28,6 +30,7 @@ public class AppStatsRepository {
     private  ArrayList<AppObject> appObjects;
     private  Activity activity;
     private  Context context;
+    private UsageStatsManager usageManager;
 
     public AppStatsRepository(Activity activity){
        this.activity = activity;
@@ -165,5 +168,22 @@ public class AppStatsRepository {
             Log.e("RemoteException",exception.getMessage());
         }
         return null;
+    }
+
+    public UsageStat getUsageStat(String packageName,long startTime,long endTime){
+        usageManager = (UsageStatsManager)context.getSystemService(Context.USAGE_STATS_SERVICE);
+        UsageEvents events = usageManager.queryEvents(startTime,endTime);
+        int foregroundEvents = 0;
+        while (events.hasNextEvent()){
+            UsageEvents.Event event = new UsageEvents.Event();
+            events.getNextEvent(event);
+            if(event.getPackageName().equals(packageName) && event.getEventType() == UsageEvents.Event.MOVE_TO_FOREGROUND){
+                foregroundEvents++;
+            }
+        }
+        UsageStat stat = new UsageStat();
+        stat.packageName = packageName;
+        stat.foregroundEvents = foregroundEvents;
+        return stat;
     }
 }
