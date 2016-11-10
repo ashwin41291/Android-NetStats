@@ -81,8 +81,10 @@ public class NotificationMonitorService extends NotificationListenerService {
             if(pack.equals("com.android.providers.downloads") && progress==0 && (notification.category.equals(Notification.CATEGORY_PROGRESS))){
                 PackageManager manager = context.getPackageManager();
                 List<ApplicationInfo> apps = manager.getInstalledApplications(0);
+
                 for(ApplicationInfo app:apps){
-                    if(app.name!=null && app.name.equals(title)){
+                    String name = manager.getApplicationLabel(app).toString();
+                    if(name!=null && name.equals(title)){
                         long currentTime = System.currentTimeMillis();
                         long lastUpdateTime = manager.getPackageInfo(app.packageName,0).lastUpdateTime;
                         NetworkStatistic statistic = repository.getDataStats(app.uid,lastUpdateTime);
@@ -125,7 +127,8 @@ public class NotificationMonitorService extends NotificationListenerService {
                 PackageManager manager = context.getPackageManager();
                 List<ApplicationInfo> apps = manager.getInstalledApplications(0);
                 for (ApplicationInfo app : apps) {
-                    if (app.name.equals(title)) {
+                    String name = manager.getApplicationLabel(app).toString();
+                    if (name!=null && name.equals(title)) {
 
                         Long startTime = updateTimes.get(app.packageName);
                         if(startTime!=null){

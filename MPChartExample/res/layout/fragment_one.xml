@@ -7,7 +7,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/stats"
+        android:text="App Usage since last update"
         android:textSize="20dp"
         android:textStyle="bold"
         android:gravity="center"
@@ -19,6 +19,11 @@
         android:layout_height="350dp"
         />
 
+    <!--<com.github.mikephil.charting.charts.LineChart-->
+        <!--android:id="@+id/lineChartStats"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="350dp"-->
+        <!--/>-->
     <!--<SeekBar-->
         <!--android:id="@+id/seekBar2"-->
         <!--android:layout_width="match_parent"-->
@@ -43,29 +48,9 @@
         <!--android:max="1500"-->
         <!--android:paddingBottom="12dp" />-->
 
-    <TextView
-        android:id="@+id/tvXMax"
-        android:layout_width="60dp"
-        android:layout_height="wrap_content"
+  =
 
-        android:layout_alignParentRight="true"
-        android:text="500"
-        android:layout_marginBottom="15dp"
-        android:layout_marginRight="10dp"
-        android:gravity="right"
-        android:textAppearance="?android:attr/textAppearanceSmall" />
 
-    <TextView
-        android:id="@+id/tvYMax"
-        android:layout_width="60dp"
-        android:layout_height="wrap_content"
-
-        android:layout_alignParentRight="true"
-        android:text="500"
-        android:layout_marginBottom="15dp"
-        android:layout_marginRight="10dp"
-        android:gravity="right"
-        android:textAppearance="?android:attr/textAppearanceSmall" />
 
 
 

@@ -3,6 +3,7 @@ package com.xxmassdeveloper.mpchartexample.custom;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.util.Log;
 
 import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.data.Entry;
@@ -26,7 +27,13 @@ public class UIDAppNameFormatter implements IValueFormatter {
     public String getFormattedValue(float value, Entry entry, int dataSetIndex, ViewPortHandler viewPortHandler) {
         int uid = (int)entry.getX();
         PackageManager manager = OneFragment.managerInstance;
-        String[] fullName = manager.getNameForUid(uid).split("\\.");
-        return fullName[fullName.length-1];
+        String applicationName="";
+        try {
+            applicationName="";
+        }
+        catch (Exception e){
+            Log.e("Error",e.getMessage());
+        }
+        return applicationName;
     }
 }
