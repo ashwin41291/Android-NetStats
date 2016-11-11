@@ -270,7 +270,7 @@ public class OneFragment extends Fragment implements SeekBar.OnSeekBarChangeList
                 List<PackageInfo> apps = manager.getInstalledPackages(PackageManager.GET_PERMISSIONS|PackageManager.GET_PROVIDERS|PackageManager.GET_META_DATA);
                 for (PackageInfo app : apps) {
                     ApplicationInfo info = manager.getApplicationInfo(app.packageName,0);
-                    if (app.requestedPermissions != null) {
+                    if (app.requestedPermissions != null && isUserApp(info)) {
                         for(int i=0;i<app.requestedPermissions.length;i++) {
                             if(app.requestedPermissions[i].equals("android.permission.INTERNET")) {
                                 Log.d("name ","App name is "+info.name);
@@ -327,6 +327,11 @@ public class OneFragment extends Fragment implements SeekBar.OnSeekBarChangeList
             //finalResult.setText(text[0]);
             // Things to be done while execution of long running operation is in
             // progress. For example updating ProgessDialog
+        }
+
+        boolean isUserApp(ApplicationInfo ai) {
+            int mask = ApplicationInfo.FLAG_SYSTEM | ApplicationInfo.FLAG_UPDATED_SYSTEM_APP;
+            return (ai.flags & mask) == 0;
         }
     }
 }

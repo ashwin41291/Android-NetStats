@@ -20,6 +20,8 @@ import com.xxmassdeveloper.mpchartexample.custom.AppsListAdapter;
 import com.xxmassdeveloper.mpchartexample.custom.UsageListAdapter;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import netstatbackend.AppObject;
@@ -137,10 +139,12 @@ public class SecondFragment extends Fragment {
                 List<PackageInfo>  packages = manager.getInstalledPackages(PackageManager.GET_PERMISSIONS|PackageManager.GET_PROVIDERS|PackageManager.GET_META_DATA);
                 for(PackageInfo pack:packages){
                     ApplicationInfo info = manager.getApplicationInfo(pack.packageName,0);
-                    UsageStat stat = repository.getUsageStat(pack.packageName,pack.lastUpdateTime,System.currentTimeMillis());
-                    stat.appName = manager.getApplicationLabel(info).toString();
-                    stat.icon = manager.getApplicationIcon(info);
-                    usageStats.add(stat);
+                    if(isUserApp(info)) {
+                        UsageStat stat = repository.getUsageStat(pack.packageName, pack.lastUpdateTime, System.currentTimeMillis());
+                        stat.appName = manager.getApplicationLabel(info).toString();
+                        stat.icon = manager.getApplicationIcon(info);
+                        usageStats.add(stat);
+                    }
                 }
             }
             catch (Exception e){
@@ -151,7 +155,26 @@ public class SecondFragment extends Fragment {
 
         @Override
         protected void onPostExecute(String result){
+            Collections.sort(usageStats,getComparator());
             setUsageListData(usageStats);
+        }
+
+        boolean isUserApp(ApplicationInfo ai) {
+            int mask = ApplicationInfo.FLAG_SYSTEM | ApplicationInfo.FLAG_UPDATED_SYSTEM_APP;
+            return (ai.flags & mask) == 0;
+        }
+
+        private Comparator<UsageStat> getComparator(){
+            Comparator comp = new Comparator<UsageStat>(){
+
+                @Override
+                public int compare(UsageStat lhs, UsageStat rhs) {
+                    if(lhs.foregroundEvents>rhs.foregroundEvents)
+                        return 1;
+                    else return -1;
+                }
+            };
+            return comp;
         }
     }
 

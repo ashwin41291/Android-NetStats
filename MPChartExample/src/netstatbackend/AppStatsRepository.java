@@ -174,12 +174,26 @@ public class AppStatsRepository {
         usageManager = (UsageStatsManager)context.getSystemService(Context.USAGE_STATS_SERVICE);
         UsageEvents events = usageManager.queryEvents(startTime,endTime);
         int foregroundEvents = 0;
+        boolean appOpened = false;
+        boolean userInteraction=false;
         while (events.hasNextEvent()){
             UsageEvents.Event event = new UsageEvents.Event();
             events.getNextEvent(event);
-            if(event.getPackageName().equals(packageName) && event.getEventType() == UsageEvents.Event.MOVE_TO_FOREGROUND){
+            if(event.getPackageName().equals(packageName) && event.getEventType() == UsageEvents.Event.MOVE_TO_FOREGROUND && !appOpened && !userInteraction){
                 foregroundEvents++;
+                Log.d("Event",packageName+" "+event.getClass());
+                appOpened=true;
+                userInteraction=true;
             }
+            if(event.getPackageName().equals(packageName) && event.getEventType() == UsageEvents.Event.MOVE_TO_BACKGROUND){
+
+                appOpened=false;
+            }
+            if(event.getPackageName().equals(packageName) && event.getEventType() == UsageEvents.Event.USER_INTERACTION){
+
+                userInteraction=false;
+            }
+
         }
         UsageStat stat = new UsageStat();
         stat.packageName = packageName;
