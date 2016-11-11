@@ -16,6 +16,9 @@ import com.xxmassdeveloper.mpchartexample.R;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 import netstatbackend.NetworkStat;
@@ -75,7 +78,8 @@ public class UsageListAdapter extends RecyclerView.Adapter<UsageListAdapter.View
       //  Double truncatedDouble = BigDecimal.valueOf(toBeTruncated)
         //        .setScale(3, RoundingMode.HALF_UP)
           //      .doubleValue();
-        holder.usage.setText(String.valueOf(obj.foregroundEvents));
+        long seconds = obj.timeInForeground/1000;
+        holder.usage.setText(String.valueOf(seconds)+"s");
     }
 
     // Return the size of your dataset (invoked by the layout manager)

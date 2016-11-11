@@ -169,7 +169,7 @@ public class SecondFragment extends Fragment {
 
                 @Override
                 public int compare(UsageStat lhs, UsageStat rhs) {
-                    if(lhs.foregroundEvents>rhs.foregroundEvents)
+                    if(lhs.timeInForeground>rhs.timeInForeground)
                         return 1;
                     else return -1;
                 }

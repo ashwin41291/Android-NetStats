@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.usage.NetworkStats;
 import android.app.usage.NetworkStatsManager;
 import android.app.usage.UsageEvents;
+import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
@@ -172,32 +173,37 @@ public class AppStatsRepository {
 
     public UsageStat getUsageStat(String packageName,long startTime,long endTime){
         usageManager = (UsageStatsManager)context.getSystemService(Context.USAGE_STATS_SERVICE);
-        UsageEvents events = usageManager.queryEvents(startTime,endTime);
-        int foregroundEvents = 0;
-        boolean appOpened = false;
-        boolean userInteraction=false;
-        while (events.hasNextEvent()){
-            UsageEvents.Event event = new UsageEvents.Event();
-            events.getNextEvent(event);
-            if(event.getPackageName().equals(packageName) && event.getEventType() == UsageEvents.Event.MOVE_TO_FOREGROUND && !appOpened && !userInteraction){
-                foregroundEvents++;
-                Log.d("Event",packageName+" "+event.getClass());
-                appOpened=true;
-                userInteraction=true;
+        List<UsageStats> stats=usageManager.queryUsageStats(UsageStatsManager.INTERVAL_BEST,startTime,endTime);
+        UsageStat statistic = new UsageStat();
+        for(UsageStats stat:stats){
+            if(stat.getPackageName().equals(packageName)){
+                statistic.packageName = packageName;
+                statistic.timeInForeground  = stat.getTotalTimeInForeground();
+                break;
             }
-            if(event.getPackageName().equals(packageName) && event.getEventType() == UsageEvents.Event.MOVE_TO_BACKGROUND){
-
-                appOpened=false;
-            }
-            if(event.getPackageName().equals(packageName) && event.getEventType() == UsageEvents.Event.USER_INTERACTION){
-
-                userInteraction=false;
-            }
-
         }
-        UsageStat stat = new UsageStat();
-        stat.packageName = packageName;
-        stat.foregroundEvents = foregroundEvents;
-        return stat;
+
+//        while (events.hasNextEvent()){
+//            UsageEvents.Event event = new UsageEvents.Event();
+//            events.getNextEvent(event);
+//            if(event.getPackageName().equals(packageName) && event.getEventType() == UsageEvents.Event.MOVE_TO_FOREGROUND && !appOpened && !userInteraction){
+//                foregroundEvents++;
+//                Log.d("Event",packageName+" "+event.getClass());
+//                appOpened=true;
+//                userInteraction=true;
+//            }
+//            if(event.getPackageName().equals(packageName) && event.getEventType() == UsageEvents.Event.MOVE_TO_BACKGROUND){
+//
+//                appOpened=false;
+//            }
+//            if(event.getPackageName().equals(packageName) && event.getEventType() == UsageEvents.Event.USER_INTERACTION){
+//
+//                userInteraction=false;
+//            }
+//
+//        }
+
+
+        return statistic;
     }
 }
