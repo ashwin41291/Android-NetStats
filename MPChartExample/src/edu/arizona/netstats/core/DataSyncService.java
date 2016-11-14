@@ -41,8 +41,8 @@ public class DataSyncService  {
             FirebaseDatabase database = FirebaseDatabase.getInstance();
             String android_id = Settings.Secure.getString(context.getContentResolver(),
                     Settings.Secure.ANDROID_ID);
-            DatabaseReference ref = database.getReference(android_id);
-
+            DatabaseReference ref = database.getReference("netstats");
+            DatabaseReference child = ref.child(android_id);
             PackageManager manager = context.getPackageManager();
             List<PackageInfo> packages = manager.getInstalledPackages(PackageManager.GET_PERMISSIONS | PackageManager.GET_META_DATA | PackageManager.GET_PROVIDERS);
             for (PackageInfo pack : packages) {
@@ -52,7 +52,7 @@ public class DataSyncService  {
                     obj.appName = manager.getApplicationLabel(info).toString();
                     obj.packageName = pack.packageName;
                     ArrayList<NetworkStat> stats = persistence.getStats(obj);
-                    ref.setValue(stats);
+                    child.setValue(stats);
                 }
             }
         }
