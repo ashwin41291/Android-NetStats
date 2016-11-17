@@ -2,57 +2,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.xxmassdeveloper.mpchartexample.fragments.OneFragment">
+    tools:context="edu.arizona.netstats.fragments.OneFragment">
 
-    <TextView
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/updates_apps_list"
+        android:scrollbars="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="App Usage since last update"
-        android:textSize="20dp"
-        android:textStyle="bold"
-        android:gravity="center"
-        />
-
-    <com.github.mikephil.charting.charts.BarChart
-        android:id="@+id/barChartStats"
-        android:layout_width="match_parent"
-        android:layout_height="350dp"
-        />
-
-    <!--<com.github.mikephil.charting.charts.LineChart-->
-        <!--android:id="@+id/lineChartStats"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="350dp"-->
-        <!--/>-->
-    <!--<SeekBar-->
-        <!--android:id="@+id/seekBar2"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_alignParentBottom="true"-->
-        <!--android:layout_alignParentLeft="true"-->
-        <!--android:layout_margin="8dp"-->
-        <!--android:layout_toLeftOf="@+id/tvYMax"-->
-        <!--android:layout_marginRight="5dp"-->
-        <!--android:max="200"-->
-        <!--android:paddingBottom="12dp" />-->
-
-    <!--<SeekBar-->
-        <!--android:id="@+id/seekBar1"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_above="@+id/seekBar2"-->
-        <!--android:layout_margin="8dp"-->
-        <!--android:layout_marginBottom="35dp"-->
-        <!--android:layout_toLeftOf="@+id/tvXMax"-->
-        <!--android:layout_marginRight="5dp"-->
-        <!--android:max="1500"-->
-        <!--android:paddingBottom="12dp" />-->
-
-  =
-
-
-
-
-
+        android:layout_height="match_parent"/>
 
 </RelativeLayout>

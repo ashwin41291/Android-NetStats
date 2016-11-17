@@ -42,33 +42,32 @@ public class Persistence {
             return true;
     }
 
-    public ArrayList<NetworkStat> getStats(AppObject app){
-        ArrayList<NetworkStat> stats = new ArrayList<>();
+    public NetworkStat getStats(AppObject app,long lastUpdateTime) {
+        NetworkStat stat = new NetworkStat();
         SQLiteDatabase db = sqlHelper.getReadableDatabase();
         String[] projection = {
                 NetStatsContract.NetStatsEntry.COLUMN_NAME_STARTTIME,
                 NetStatsContract.NetStatsEntry.COLUMN_NAME_ENDTIME,
                 NetStatsContract.NetStatsEntry.COLUMN_NAME_TOTALUSAGEINBYTES
         };
-        String selection= NetStatsContract.NetStatsEntry.COLUMN_NAME_PACKAGENAME + "=?";;
-        String[] selectionArgs = {app.packageName};
+        String selection = NetStatsContract.NetStatsEntry.COLUMN_NAME_PACKAGENAME + "=? and " + NetStatsContract.NetStatsEntry.COLUMN_NAME_STARTTIME + ">?";
+        ;
+        String[] selectionArgs = {app.packageName, String.valueOf(lastUpdateTime)};
 
 
-        Cursor c = db.query(NetStatsContract.NetStatsEntry.TABLE_NAME,projection,selection,selectionArgs,null,null,null);
-        c.moveToFirst();
-        do{
-            String startDate = c.getString(c.getColumnIndex(NetStatsContract.NetStatsEntry.COLUMN_NAME_STARTTIME));
-            String endDate = c.getString(c.getColumnIndex(NetStatsContract.NetStatsEntry.COLUMN_NAME_ENDTIME));
-            double usage = c.getDouble(c.getColumnIndex(NetStatsContract.NetStatsEntry.COLUMN_NAME_TOTALUSAGEINBYTES));
-            NetworkStat stat = new NetworkStat();
-            stat.app = app;
-            stat.totalUsageInBytes = usage;
-            stat.startTime = startDate;
-            stat.endTime = endDate;
-            stats.add(stat);
-        }while(c.moveToNext());
+        Cursor c = db.query(NetStatsContract.NetStatsEntry.TABLE_NAME, projection, selection, selectionArgs, null, null, null);
+        boolean res = c.moveToFirst();
+        double totalUsageInBytes = 0.0;
+        if (res){
+            do {
+                totalUsageInBytes += c.getDouble(c.getColumnIndex(NetStatsContract.NetStatsEntry.COLUMN_NAME_TOTALUSAGEINBYTES));
+            } while (c.moveToNext());
+         }
+        stat.totalUsageInBytes = totalUsageInBytes;
+        stat.app = app;
+
         c.close();
-        return stats;
+        return stat;
     }
 
     public boolean addVictimAppToDb(String packageName,double usageInBytes){

@@ -38,6 +38,7 @@ public class DataSyncService  {
     public void storeData() {
         try {
             Persistence persistence = new Persistence(context);
+            ArrayList<NetworkStat> stats = new ArrayList<>();
             FirebaseDatabase database = FirebaseDatabase.getInstance();
             String android_id = Settings.Secure.getString(context.getContentResolver(),
                     Settings.Secure.ANDROID_ID);
@@ -51,11 +52,14 @@ public class DataSyncService  {
                     AppObject obj = new AppObject();
                     obj.appName = manager.getApplicationLabel(info).toString();
                     obj.packageName = pack.packageName;
-                    ArrayList<NetworkStat> stats = persistence.getStats(obj);
-                    child.setValue(stats);
+                    NetworkStat stat = persistence.getStats(obj,pack.lastUpdateTime);
+                    if(stat.totalUsageInBytes>0)
+                    stats.add(stat);
                 }
             }
+            child.setValue(stats);
         }
+
         catch (Exception ex){
             Log.e("Error",ex.getMessage());
         }

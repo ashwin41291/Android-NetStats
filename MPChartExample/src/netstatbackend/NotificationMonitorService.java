@@ -77,35 +77,25 @@ public class NotificationMonitorService extends NotificationListenerService {
             Notification notification = sbn.getNotification();
             Bundle extras = notification.extras;
             String title = extras.getString("android.title");
-            int progress = (int)extras.get(Notification.EXTRA_PROGRESS);
-            if(pack.equals("com.android.providers.downloads") && progress==0 && (notification.category.equals(Notification.CATEGORY_PROGRESS))){
+            Log.i("Info",title);
+            int progress = extras.getInt("android.progress");
+            if(pack.equals("com.android.providers.downloads") && progress==0){
                 PackageManager manager = context.getPackageManager();
                 List<ApplicationInfo> apps = manager.getInstalledApplications(0);
 
                 for(ApplicationInfo app:apps){
                     String name = manager.getApplicationLabel(app).toString();
-                    if(name!=null && name.equals(title)){
+                    if(name.equals(title)){
                         long currentTime = System.currentTimeMillis();
                         long lastUpdateTime = manager.getPackageInfo(app.packageName,0).lastUpdateTime;
-                        NetworkStatistic statistic = repository.getDataStats(app.uid,lastUpdateTime);
 
-                        if(statistic.usageInBytes<=1024*1024)
-                        {
-                            Log.v("Alert",app.name+" can be uninstalled or updates can be stopped");
-                            persistence.addVictimAppToDb(app.packageName,statistic.usageInBytes);
-                            //Update in DB that app is to be uninstalled
-                        }
-                        else{
                             if(!updateTimes.containsKey(app.packageName)){
                                 updateTimes.put(app.packageName,currentTime);
                             }
-                            else {
-                                updateTimes.remove(app.packageName);
-                                updateTimes.put(app.packageName,currentTime);
-                            }
+
                         }
                     }
-                }
+
             }
         }
         catch (Exception nnfe)
@@ -114,26 +104,38 @@ public class NotificationMonitorService extends NotificationListenerService {
         }
     }
 
+    boolean isUserApp(ApplicationInfo ai) {
+        int mask = ApplicationInfo.FLAG_SYSTEM | ApplicationInfo.FLAG_UPDATED_SYSTEM_APP;
+        return (ai.flags & mask) == 0;
+    }
+
     @Override
     public void onNotificationRemoved(StatusBarNotification sbn){
         try{
             Log.d("Notification","removing notification");
+            Log.v("Notification","adding uodae usage for "+sbn.getPackageName());
             Notification notification = sbn.getNotification();
             Bundle extras = notification.extras;
             String title = extras.getString("android.title");
             String packageName = sbn.getPackageName();
             String text = extras.getString("android.text");
+            Log.v("Info","Name of app is "+text);
+            int progress = extras.getInt("android.progress");
             if(packageName.equals("com.android.providers.downloads")) {
                 PackageManager manager = context.getPackageManager();
-                List<ApplicationInfo> apps = manager.getInstalledApplications(0);
+                List<ApplicationInfo> apps = manager.getInstalledApplications(PackageManager.GET_META_DATA);
                 for (ApplicationInfo app : apps) {
                     String name = manager.getApplicationLabel(app).toString();
-                    if (name!=null && name.equals(title)) {
-
+                    if (name.equals(title) && progress==100) {
+                        int uid = manager.getApplicationInfo("com.android.providers.downloads",PackageManager.GET_META_DATA).uid;
                         Long startTime = updateTimes.get(app.packageName);
+                   //     NetworkStatistic stats = repository.getDataStats(uid,(long)startTime);
                         if(startTime!=null){
-                            NetworkStatistic stats = repository.getDataStats(app.uid,startTime);
+                           NetworkStatistic stats = repository.getDataStats(uid,startTime);
+                            stats.packageName = app.packageName;
+                            stats.appName = name;
                             persistence.addToDb(stats);
+                            updateTimes.remove(app.packageName);
                             //to get data usage between startTime and endTime and this will be update Data for the app, then add it to DB
                          //   NetworkStatistic statistic = repository.getDataStats(app.uid,)
                         }

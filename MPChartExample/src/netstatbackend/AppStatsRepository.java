@@ -115,24 +115,26 @@ public class AppStatsRepository {
         try{
             if(manager!=null){
                 long currentTime = System.currentTimeMillis();
-                ArrayList<NetworkStatistic> statistics = new ArrayList<>();
+                NetworkStatistic stat = new NetworkStatistic();
+                stat.uid = uid;
               //  Context context = this.activity.getApplicationContext();
                 String subscriberId = getSubscriberId(context,ConnectivityManager.TYPE_MOBILE);
                 NetworkStats buckets = manager.querySummary(ConnectivityManager.TYPE_MOBILE,subscriberId,updateTime,currentTime);
+                long usage = 0;
                 while(buckets.hasNextBucket()){
                     NetworkStats.Bucket bucket = new NetworkStats.Bucket();
                     boolean filled = buckets.getNextBucket(bucket);
                     if(filled && bucket.getUid()==uid) {
-                        NetworkStatistic stat = new NetworkStatistic();
-                        stat.uid = uid;
-                        stat.usageInBytes = bucket.getRxBytes() + bucket.getTxBytes();
-                        stat.startDate = bucket.getStartTimeStamp();
-                        stat.endDate = bucket.getEndTimeStamp();
-                        return stat;
+
+
+                       usage = usage+ bucket.getRxBytes() + bucket.getTxBytes();
+
+
                     }
                 }
+                stat.usageInBytes = usage;
                 buckets.close();
-                return null;
+                return stat;
             }
         }
         catch (Exception exception){
@@ -145,24 +147,21 @@ public class AppStatsRepository {
         try{
             if(manager!=null){
                 long currentTime = System.currentTimeMillis();
-                ArrayList<NetworkStatistic> statistics = new ArrayList<>();
+                NetworkStatistic stat = new NetworkStatistic();
              //   Context context = this.activity.getApplicationContext();
                 String subscriberId = getSubscriberId(context,ConnectivityManager.TYPE_MOBILE);
                 NetworkStats buckets = manager.querySummary(ConnectivityManager.TYPE_WIFI,"",updateTime,currentTime);
+                long usage = 0;
                 while(buckets.hasNextBucket()){
                     NetworkStats.Bucket bucket=new NetworkStats.Bucket();
                     buckets.getNextBucket(bucket);
                     if(bucket.getUid()==uid) {
-                        NetworkStatistic stat = new NetworkStatistic();
-                        stat.uid = uid;
-                        stat.usageInBytes = bucket.getRxBytes() + bucket.getTxBytes();
-                        stat.startDate = bucket.getStartTimeStamp();
-                        stat.endDate = bucket.getEndTimeStamp();
-                        return stat;
+                     usage = usage + bucket.getTxBytes()+bucket.getRxBytes();
                     }
                 }
+                stat.usageInBytes = usage;
                 buckets.close();
-                return null;
+                return stat;
             }
         }
         catch (Exception exception){
