@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "465856751823",
+    "firebase_url": "https://netstats-2565d.firebaseio.com",
+    "project_id": "netstats-2565d",
+    "storage_bucket": "netstats-2565d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:465856751823:android:ec8fc8d928d5f210",
+        "android_client_info": {
+          "package_name": "edu.arizona.netstats"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "465856751823-ik7s8ld54jcf25b1efc7tccpdap1hdu8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB2S9GHrndyLG_zVBpcVIMj9ufhgNXubT8"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
