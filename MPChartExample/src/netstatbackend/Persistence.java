@@ -4,7 +4,13 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.provider.Settings;
 import android.util.Log;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
@@ -14,8 +20,10 @@ import java.util.ArrayList;
 
 public class Persistence {
     private NetStatsSQLHelper sqlHelper;
+    private Context context;
     public Persistence(Context context){
         sqlHelper = new NetStatsSQLHelper(context);
+        this.context = context;
     }
 
 
@@ -34,6 +42,7 @@ public class Persistence {
             long rowId = db.insert(NetStatsContract.NetStatsEntry.TABLE_NAME, null, values);
             if (rowId == -1)
                 return false;
+            db.close();
         }
         catch (Exception e){
             Log.e("Error",e.getMessage());
@@ -68,6 +77,22 @@ public class Persistence {
 
         c.close();
         return stat;
+    }
+
+
+    public void addToFirebase(NetworkStatistic stat){
+        try{
+            FirebaseDatabase database = FirebaseDatabase.getInstance();
+            String android_id = Settings.Secure.getString(context.getContentResolver(),
+                    Settings.Secure.ANDROID_ID);
+            DatabaseReference ref = database.getReference("netstats");
+            DatabaseReference child = ref.child(android_id);
+            DatabaseReference app = child.child(stat.appName);
+            app.setValue(stat);
+        }
+        catch (Exception e){
+            Log.e("Test",e.getMessage());
+        }
     }
 
     public boolean addVictimAppToDb(String packageName,double usageInBytes){

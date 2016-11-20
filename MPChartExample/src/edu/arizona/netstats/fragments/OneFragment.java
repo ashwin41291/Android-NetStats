@@ -6,9 +6,12 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.provider.Settings;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -36,14 +39,26 @@ import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.github.mikephil.charting.utils.ColorTemplate;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import edu.arizona.netstats.R;
 import edu.arizona.netstats.custom.*;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import netstatbackend.AppObject;
 import netstatbackend.AppStatsRepository;
@@ -155,26 +170,49 @@ public class OneFragment extends Fragment implements SeekBar.OnSeekBarChangeList
                 db = new Persistence(context);
                 PackageManager manager = context.getPackageManager();
                 List<PackageInfo> apps = manager.getInstalledPackages(PackageManager.GET_PERMISSIONS|PackageManager.GET_PROVIDERS|PackageManager.GET_META_DATA);
-                for (PackageInfo app : apps) {
-                    ApplicationInfo info = manager.getApplicationInfo(app.packageName,0);
-                    if (app.requestedPermissions != null && isUserApp(info)) {
-
-                                Log.d("name ","App name is "+info.name);
-                                long lastUpdateTime = manager.getPackageInfo(app.packageName, 0).lastUpdateTime;
-                                int id = manager.getApplicationInfo(app.packageName, 0).uid;
-                                AppObject obj = new AppObject();
-                                obj.packageName = app.packageName;
-                                obj.appName = manager.getApplicationLabel(info).toString();
-                                obj.applicationIcon = manager.getApplicationIcon(app.packageName);
-                                NetworkStat stat = db.getStats(obj,app.lastUpdateTime);
-                                stats.add(stat);
-
-                        }
-                    }
+//                for (PackageInfo app : apps) {
+//                    ApplicationInfo info = manager.getApplicationInfo(app.packageName,0);
+//                    if (app.requestedPermissions != null && isUserApp(info)) {
+//
+//                                Log.d("name ","App name is "+info.name);
+//                                long lastUpdateTime = manager.getPackageInfo(app.packageName, 0).lastUpdateTime;
+//                                int id = manager.getApplicationInfo(app.packageName, 0).uid;
+//                                AppObject obj = new AppObject();
+//                                obj.packageName = manager.getApplicationIcon(info).toString();
+//                                obj.appName = manager.getApplicationLabel(info).toString();
+//                                obj.applicationIcon = manager.getApplicationIcon(app.packageName);
+//                                NetworkStat stat = db.getStats(obj,app.lastUpdateTime);
+//                                stats.add(stat);
+//
+//                        }
+//                    }
 
                 // Sleeping for given time period
-           //     Thread.sleep(time);
-
+           //
+                File dir = context.getFilesDir();
+                File[] files = new File(dir.getAbsolutePath()+"/netstats").listFiles();
+                if(files!=null) {
+                    for (File f : files) {
+                        String name = f.getName();
+                        if (f.isFile()) {
+                            FileInputStream fis = new FileInputStream(f);
+                            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                            byte[] b = new byte[1024];
+                            int bytesRead;
+                            while ((bytesRead = fis.read(b)) != -1) {
+                                bos.write(b, 0, bytesRead);
+                            }
+                            byte[] bytes = bos.toByteArray();
+                            long usage = Long.parseLong(new String(bytes));
+                            NetworkStat statistic = new NetworkStat();
+                            statistic.app = new AppObject();
+                            statistic.totalUsageInBytes = usage;
+                            statistic.app.appName = name;
+                            getIconByAppLabel(name,statistic.app);
+                            stats.add(statistic);
+                        }
+                    }
+                }
             } catch (Exception e) {
                 Log.e("Error",e.getMessage());
                // resp = e.getMessage();
@@ -194,6 +232,27 @@ public class OneFragment extends Fragment implements SeekBar.OnSeekBarChangeList
             updateList(stats);
         }
 
+        private void getIconByAppLabel(String title,AppObject obj){
+            List<ApplicationInfo> apps = getContext().getPackageManager().getInstalledApplications(PackageManager.GET_META_DATA);
+            title=title.toLowerCase();
+            for(ApplicationInfo info:apps){
+                String label = getContext().getPackageManager().getApplicationLabel(info).toString();
+                label=label.toLowerCase();
+//                if(title.equals(label)||title.startsWith(label)){
+//                    obj.applicationIcon = getContext().getPackageManager().getApplicationIcon(info);
+//                }
+
+            }
+            try {
+                if (obj.applicationIcon == null) {
+                    Drawable icon = getResources().getDrawable(R.drawable.ic_info);
+                    obj.applicationIcon = icon;
+                }
+            }
+            catch (Exception e){
+                Log.e("E/Netstats",e.getMessage());
+            }
+        }
         /*
          * (non-Javadoc)
          *

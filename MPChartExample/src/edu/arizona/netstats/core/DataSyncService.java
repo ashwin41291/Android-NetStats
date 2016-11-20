@@ -16,6 +16,9 @@ import android.util.Log;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,14 +49,26 @@ public class DataSyncService  {
             DatabaseReference child = ref.child(android_id);
             PackageManager manager = context.getPackageManager();
             List<PackageInfo> packages = manager.getInstalledPackages(PackageManager.GET_PERMISSIONS | PackageManager.GET_META_DATA | PackageManager.GET_PROVIDERS);
-            for (PackageInfo pack : packages) {
-                ApplicationInfo info = manager.getApplicationInfo(pack.packageName, 0);
-                if(isUserApp(info)){
-                    AppObject obj = new AppObject();
-                    obj.appName = manager.getApplicationLabel(info).toString();
-                    obj.packageName = pack.packageName;
-                    NetworkStat stat = persistence.getStats(obj,pack.lastUpdateTime);
-                    if(stat.totalUsageInBytes>0)
+            File dir = context.getFilesDir();
+            File[] files = new File(dir.getAbsolutePath()+"/netstats").listFiles();
+            if(files!=null){
+                for(File f:files){
+                    String name = f.getName();
+                    NetworkStat stat = new NetworkStat();
+                    stat.app = new AppObject();
+                    stat.app.appName = name;
+                    stat.endTime = String.valueOf(f.lastModified());
+                    FileInputStream fis = new FileInputStream(f);
+                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                    byte[] b = new byte[1024];
+                    int bytesRead;
+                    while ((bytesRead = fis.read(b)) != -1) {
+                        bos.write(b, 0, bytesRead);
+                    }
+                    byte[] bytes = bos.toByteArray();
+                    long usage = Long.parseLong(new String(bytes));
+
+                    stat.totalUsageInBytes = usage;
                     stats.add(stat);
                 }
             }

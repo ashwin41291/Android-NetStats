@@ -36,7 +36,7 @@ import netstatbackend.AppStatsRepository;
 import netstatbackend.NetworkStatistic;
 import netstatbackend.NotificationMonitorService;
 import netstatbackend.Persistence;
-import netstatbackend.StatsManager;
+
 import netstatbackend.UsageStat;
 
 

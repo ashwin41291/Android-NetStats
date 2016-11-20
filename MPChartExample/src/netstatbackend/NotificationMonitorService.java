@@ -8,6 +8,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
+import android.net.TrafficStats;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.SystemClock;
@@ -15,6 +17,8 @@ import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.util.Log;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -79,26 +83,33 @@ public class NotificationMonitorService extends NotificationListenerService {
             String title = extras.getString("android.title");
             Log.i("Info",title);
             int progress = extras.getInt("android.progress");
-            if(pack.equals("com.android.providers.downloads") && progress==0){
-                PackageManager manager = context.getPackageManager();
-                List<ApplicationInfo> apps = manager.getInstalledApplications(0);
-
-                for(ApplicationInfo app:apps){
-                    String name = manager.getApplicationLabel(app).toString();
-                    Log.v("App label - ","Description - "+app.loadDescription(manager));
-                    if((title.equals(name)||title.toLowerCase().contains(name.toLowerCase())||name.toLowerCase().contains(title.toLowerCase()))){
-                        long currentTime = System.currentTimeMillis();
-                        long lastUpdateTime = manager.getPackageInfo(app.packageName,0).lastUpdateTime;
-
-                            if(!updateTimes.containsKey(app.packageName)){
-                                updateTimes.put(app.packageName,currentTime);
-                            }
-
-                        }
-                    }
-
+//            if(pack.equals("com.android.providers.downloads") && progress==0){
+//                PackageManager manager = context.getPackageManager();
+//                List<ApplicationInfo> apps = manager.getInstalledApplications(0);
+//
+//                for(ApplicationInfo app:apps){
+//                    String name = manager.getApplicationLabel(app).toString();
+//                    Log.v("App label - ","Description - "+app.loadDescription(manager));
+//                    if((title.equals(name)||title.toLowerCase().contains(name.toLowerCase())||name.toLowerCase().contains(title.toLowerCase()))){
+//                        long currentTime = System.currentTimeMillis();
+//                        long lastUpdateTime = manager.getPackageInfo(app.packageName,0).lastUpdateTime;
+//
+//                            if(!updateTimes.containsKey(app.packageName)){
+//                                updateTimes.put(app.packageName,currentTime);
+//                            }
+//
+//                        }
+//                    }
+//
+//            }
+            if(pack.equals("com.android.providers.downloads") && progress==0) {
+                long currentTime = System.currentTimeMillis();
+                long usage = TrafficStats.getTotalTxBytes() + TrafficStats.getTotalRxBytes();
+                if(!updateTimes.containsKey(title)){
+                    updateTimes.put(title,usage);
+                }
             }
-        }
+       }
         catch (Exception nnfe)
         {
             Log.e("Error",nnfe.getMessage());
@@ -122,26 +133,48 @@ public class NotificationMonitorService extends NotificationListenerService {
             String text = extras.getString("android.text");
             Log.v("Info","Name of app is "+text);
             int progress = extras.getInt("android.progress");
-            if(packageName.equals("com.android.providers.downloads")) {
-                PackageManager manager = context.getPackageManager();
-                List<ApplicationInfo> apps = manager.getInstalledApplications(PackageManager.GET_META_DATA);
-                for (ApplicationInfo app : apps) {
-                    String name = manager.getApplicationLabel(app).toString();
-                    if ((title.equals(name)||title.toLowerCase().contains(name.toLowerCase())||name.toLowerCase().contains(title.toLowerCase()))) {
-                        int uid = manager.getApplicationInfo("com.android.providers.downloads",PackageManager.GET_META_DATA).uid;
-                        Long startTime = updateTimes.get(app.packageName);
-                   //     NetworkStatistic stats = repository.getDataStats(uid,(long)startTime);
-                        if(startTime!=null){
-                           NetworkStatistic stats = repository.getDataStats(uid,startTime);
-                            stats.packageName = app.packageName;
-                            stats.appName = name;
-                            persistence.addToDb(stats);
-                            updateTimes.remove(app.packageName);
-                            //to get data usage between startTime and endTime and this will be update Data for the app, then add it to DB
-                         //   NetworkStatistic statistic = repository.getDataStats(app.uid,)
-                        }
-                        break;
-                    }
+//            if(packageName.equals("com.android.providers.downloads")) {
+//                PackageManager manager = context.getPackageManager();
+//                List<ApplicationInfo> apps = manager.getInstalledApplications(PackageManager.GET_META_DATA);
+//                for (ApplicationInfo app : apps) {
+//                    String name = manager.getApplicationLabel(app).toString();
+//                    if ((title.equals(name)||title.toLowerCase().contains(name.toLowerCase())||name.toLowerCase().contains(title.toLowerCase()))) {
+//                        int uid = manager.getApplicationInfo("com.android.providers.downloads",PackageManager.GET_META_DATA).uid;
+//                        Long startTime = updateTimes.get(app.packageName);
+//                   //     NetworkStatistic stats = repository.getDataStats(uid,(long)startTime);
+//                        if(startTime!=null){
+//                           NetworkStatistic stats = repository.getDataStats(uid,startTime);
+//                            stats.packageName = app.packageName;
+//                            stats.appName = name;
+//                            persistence.addToDb(stats);
+//                            updateTimes.remove(app.packageName);
+//                            //to get data usage between startTime and endTime and this will be update Data for the app, then add it to DB
+//                         //   NetworkStatistic statistic = repository.getDataStats(app.uid,)
+//                        }
+//                        break;
+//                    }
+//                }
+//            }
+            if(packageName.equals("com.android.providers.downloads")){
+                PackageManager manager = getPackageManager();
+                int uid = manager.getApplicationInfo("com.android.providers.downloads",PackageManager.GET_META_DATA).uid;
+                Long usage = updateTimes.get(title);
+                if(usage!=null) {
+                    long finalUsage = TrafficStats.getTotalTxBytes() + TrafficStats.getTotalRxBytes();
+                    long diff = finalUsage - usage;
+                   NetworkStatistic statistic = new NetworkStatistic();
+                    statistic.appName = title;
+                    statistic.usageInBytes = diff;
+                    statistic.packageName = title;
+                  //  persistence.addToFirebase(statistic);
+                    File dir = context.getFilesDir();
+                    File appFiles = new File(dir.getAbsolutePath()+"/netstats");
+                    if(!appFiles.exists())
+                        appFiles.mkdir();
+                    FileOutputStream fos = new FileOutputStream(dir.getAbsolutePath()+"/netstats/"+title);
+                    fos.write(String.valueOf(statistic.usageInBytes).getBytes());
+                    fos.close();
+                    updateTimes.remove(title);
                 }
             }
         }
@@ -149,6 +182,8 @@ public class NotificationMonitorService extends NotificationListenerService {
             Log.e("Error",e.getMessage());
         }
     }
+
+
 
 
 }
