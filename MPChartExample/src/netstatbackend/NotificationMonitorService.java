@@ -85,7 +85,8 @@ public class NotificationMonitorService extends NotificationListenerService {
 
                 for(ApplicationInfo app:apps){
                     String name = manager.getApplicationLabel(app).toString();
-                    if(name.equals(title)){
+                    Log.v("App label - ","Description - "+app.loadDescription(manager));
+                    if((title.equals(name)||title.toLowerCase().contains(name.toLowerCase())||name.toLowerCase().contains(title.toLowerCase()))){
                         long currentTime = System.currentTimeMillis();
                         long lastUpdateTime = manager.getPackageInfo(app.packageName,0).lastUpdateTime;
 
@@ -113,7 +114,7 @@ public class NotificationMonitorService extends NotificationListenerService {
     public void onNotificationRemoved(StatusBarNotification sbn){
         try{
             Log.d("Notification","removing notification");
-            Log.v("Notification","adding uodae usage for "+sbn.getPackageName());
+            Log.v("Notification","adding update usage for "+sbn.getPackageName());
             Notification notification = sbn.getNotification();
             Bundle extras = notification.extras;
             String title = extras.getString("android.title");
@@ -126,7 +127,7 @@ public class NotificationMonitorService extends NotificationListenerService {
                 List<ApplicationInfo> apps = manager.getInstalledApplications(PackageManager.GET_META_DATA);
                 for (ApplicationInfo app : apps) {
                     String name = manager.getApplicationLabel(app).toString();
-                    if (name.equals(title) && progress==100) {
+                    if ((title.equals(name)||title.toLowerCase().contains(name.toLowerCase())||name.toLowerCase().contains(title.toLowerCase()))) {
                         int uid = manager.getApplicationInfo("com.android.providers.downloads",PackageManager.GET_META_DATA).uid;
                         Long startTime = updateTimes.get(app.packageName);
                    //     NetworkStatistic stats = repository.getDataStats(uid,(long)startTime);

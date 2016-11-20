@@ -76,7 +76,7 @@ public class UsageListAdapter extends RecyclerView.Adapter<UsageListAdapter.View
       //  Double truncatedDouble = BigDecimal.valueOf(toBeTruncated)
         //        .setScale(3, RoundingMode.HALF_UP)
           //      .doubleValue();
-        holder.usage.setText(String.valueOf(obj.timeInForeground)+"s");
+        holder.usage.setText(String.valueOf(obj.foregroundEvents));
     }
 
     // Return the size of your dataset (invoked by the layout manager)

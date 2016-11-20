@@ -42,6 +42,7 @@ import edu.arizona.netstats.custom.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import netstatbackend.AppObject;
@@ -49,6 +50,7 @@ import netstatbackend.AppStatsRepository;
 import netstatbackend.NetworkStat;
 import netstatbackend.NetworkStatistic;
 import netstatbackend.Persistence;
+import netstatbackend.UsageStat;
 
 
 public class OneFragment extends Fragment implements SeekBar.OnSeekBarChangeListener,MediaPlayer.OnSeekCompleteListener,OnChartValueSelectedListener{
@@ -188,6 +190,7 @@ public class OneFragment extends Fragment implements SeekBar.OnSeekBarChangeList
         @Override
         protected void onPostExecute(String result) {
             // execution of result of Long time consuming operation
+            Collections.sort(stats,getComparator());
             updateList(stats);
         }
 
@@ -217,6 +220,19 @@ public class OneFragment extends Fragment implements SeekBar.OnSeekBarChangeList
         boolean isUserApp(ApplicationInfo ai) {
             int mask = ApplicationInfo.FLAG_SYSTEM | ApplicationInfo.FLAG_UPDATED_SYSTEM_APP;
             return (ai.flags & mask) == 0;
+        }
+
+        private Comparator<NetworkStat> getComparator(){
+            Comparator comp = new Comparator<NetworkStat>(){
+
+                @Override
+                public int compare(NetworkStat lhs, NetworkStat rhs) {
+                    if(lhs.totalUsageInBytes>rhs.totalUsageInBytes)
+                        return -1;
+                    else return 1;
+                }
+            };
+            return comp;
         }
     }
 }

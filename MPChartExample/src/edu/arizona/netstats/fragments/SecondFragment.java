@@ -76,52 +76,6 @@ public class SecondFragment extends Fragment {
         UsageListAdapter adapter = new UsageListAdapter(usageStats);
         mRecyclerView.setAdapter(adapter);
     }
-    private class AsyncTaskRunner extends AsyncTask<Context,String,String>{
-
-        private AppStatsRepository repository;
-        private ArrayList<NetworkStat> appStats;
-        @Override
-        protected String doInBackground(Context... params) {
-            try {
-                Context context = params[0];
-                appStats = new ArrayList<>();
-                repository = new AppStatsRepository(context);
-                PackageManager manager = context.getPackageManager();
-                List<PackageInfo> packages = manager.getInstalledPackages(PackageManager.GET_PERMISSIONS | PackageManager.GET_PROVIDERS);
-                for (PackageInfo pack : packages) {
-                    ApplicationInfo info = pack.applicationInfo;
-                    String[] permissions = pack.requestedPermissions;
-                    if (permissions != null) {
-                        for (int i = 0; i < permissions.length; i++) {
-                            if (permissions[i].equals("android.permission.INTERNET")) {
-                                NetworkStatistic stat = repository.getDataStats(info.uid, pack.lastUpdateTime);
-                                if (stat.usageInBytes <= 1024 * 1024) {
-                                    NetworkStat appStat = new NetworkStat();
-                                    appStat.app = new AppObject();
-                                    appStat.app.applicationIcon = manager.getApplicationIcon(pack.packageName);
-                                    appStat.app.packageName = pack.packageName;
-                                    appStat.app.appName = manager.getApplicationLabel(info).toString();
-                                    appStat.totalUsageInBytes = stat.usageInBytes;
-                                    appStats.add(appStat);
-                                }
-                            }
-                        }
-                    }
-                   // setListData(appStats);
-
-                }
-            }
-            catch (Exception e){
-                Log.e("Error",e.getMessage());
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute (String result){
-            
-        }
-    }
 
     private class UsageTaskRunner extends AsyncTask<Context,String,String>{
 
