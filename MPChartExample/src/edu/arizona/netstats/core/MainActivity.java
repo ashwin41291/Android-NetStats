@@ -84,7 +84,7 @@ public class MainActivity extends AppCompatActivity  {
 
 
         JobInfo info = new JobInfo.Builder(1,serviceName).setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY).setPeriodic(300*1000).build();
-        scheduler.schedule(info);
+       // scheduler.schedule(info);
         startService(i);
       //  if(!NotificationMonitorService.isNotificationAccessEnabled) {
             Intent intent = new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS");
@@ -106,12 +106,13 @@ public class MainActivity extends AppCompatActivity  {
             public void onClick(View v){
                 new MaterialDialog.Builder(v.getContext())
                         .title("NetStats")
-                        .content("The goal behind NetStats was to explore the quantify the data used by applications in updates. These days, " +
+                        .content("The goal behind NetStats was to explore and quantify the data used by applications in updates. These days, " +
                                 "an average Android user has several apps that are rarely or not used at all. But due to automatic updates being enabled at a global level," +
-                                "these unused apps consume data. \n\nWe offer the user two views of usage - firstly, the data consumption by apps due to updates and secondly the time" +
-                                "spent by apps in the foreground since their last update. Both these statistics can used to suggest or inform the user about apps for which updates can be" +
+                                "these unused apps consume data. \n\nWe offer the user two views of usage - firstly, the data consumption by apps due to updates and secondly the number of events" +
+                                "by apps in the foreground since their last update. Both these statistics can used to suggest or inform the user about apps for which updates can be" +
                                 " disabled.\n\n Developed by Sridhar & Aswin, University of Arizona.\n\n " +
-                                "Credits: Flaticon for icons" +
+                                "Credits: Icons made by Freepik,Madebyoliver from www.flaticon.com \n" +
+                                "\n" +
                                 "")
                         .show();
             }
@@ -120,8 +121,8 @@ public class MainActivity extends AppCompatActivity  {
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
 
-        tabLayout.getTabAt(0).setIcon(R.drawable.ic_update_usage);
-        tabLayout.getTabAt(1).setIcon(R.drawable.ic_time);
+        tabLayout.getTabAt(1).setIcon(R.drawable.ic_update_usage);
+        tabLayout.getTabAt(0).setIcon(R.drawable.ic_time);
       //  statusBarNotify();
     }
 
@@ -164,8 +165,8 @@ public class MainActivity extends AppCompatActivity  {
 //    }
     private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
-        adapter.addFragment(new OneFragment(), "UPDATES");
-        adapter.addFragment(new SecondFragment(), "USAGE");
+        adapter.addFragment(new SecondFragment(), "UPDATES");
+        adapter.addFragment(new OneFragment(), "USAGE");
 
         viewPager.setAdapter(adapter);
     }

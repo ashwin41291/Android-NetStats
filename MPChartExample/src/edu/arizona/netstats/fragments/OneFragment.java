@@ -44,6 +44,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.pnikosis.materialishprogress.ProgressWheel;
 
 import edu.arizona.netstats.R;
 import edu.arizona.netstats.custom.*;
@@ -81,6 +82,7 @@ public class OneFragment extends Fragment implements SeekBar.OnSeekBarChangeList
     private RecyclerView.LayoutManager mLayoutManager;
     private Persistence db;
     public static PackageManager managerInstance;
+    private ProgressWheel wheel;
 
 
     public OneFragment() {
@@ -96,6 +98,9 @@ public class OneFragment extends Fragment implements SeekBar.OnSeekBarChangeList
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState){
+        wheel = (ProgressWheel)view.findViewById(R.id.progress_wheel_one);
+        wheel.setBarColor(Color.RED);
+        wheel.spin();
         mRecyclerView = (RecyclerView)view.findViewById(R.id.updates_apps_list);
         mRecyclerView.setHasFixedSize(true);
 
@@ -154,6 +159,7 @@ public class OneFragment extends Fragment implements SeekBar.OnSeekBarChangeList
     {
         UpdateUsageAdapter adapter = new UpdateUsageAdapter(stats);
         mRecyclerView.setAdapter(adapter);
+        wheel.stopSpinning();
     }
 
     private class AsyncTaskRunner extends AsyncTask<Context, String, String> {

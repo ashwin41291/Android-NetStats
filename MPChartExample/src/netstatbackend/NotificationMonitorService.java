@@ -17,7 +17,9 @@ import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.util.Log;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Date;
@@ -171,9 +173,20 @@ public class NotificationMonitorService extends NotificationListenerService {
                     File appFiles = new File(dir.getAbsolutePath()+"/netstats");
                     if(!appFiles.exists())
                         appFiles.mkdir();
-                    FileOutputStream fos = new FileOutputStream(dir.getAbsolutePath()+"/netstats/"+title);
-                    fos.write(String.valueOf(statistic.usageInBytes).getBytes());
-                    fos.close();
+                    if(checkFileExists(dir.getAbsolutePath()+"/netstats/"+title))
+                    {
+                        long value = readFile(dir.getAbsolutePath()+"/netstats/"+title);
+                        FileOutputStream fos = new FileOutputStream(dir.getAbsolutePath() + "/netstats/" + title);
+                        fos.write(String.valueOf(value+statistic.usageInBytes).getBytes());
+                        statistic.usageInBytes = statistic.usageInBytes+value;
+                        fos.close();
+                    }
+                    else {
+                        FileOutputStream fos = new FileOutputStream(dir.getAbsolutePath() + "/netstats/" + title);
+                        fos.write(String.valueOf(statistic.usageInBytes).getBytes());
+                        fos.close();
+                    }
+                    persistence.addToDb(statistic);
                     updateTimes.remove(title);
                 }
             }
@@ -181,6 +194,30 @@ public class NotificationMonitorService extends NotificationListenerService {
         catch (Exception e){
             Log.e("Error",e.getMessage());
         }
+    }
+
+    private long readFile(String file) {
+        try {
+            FileInputStream fis = new FileInputStream(new File(file));
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            byte[] b = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = fis.read(b)) != -1) {
+                bos.write(b, 0, bytesRead);
+            }
+            byte[] bytes = bos.toByteArray();
+            long usage = Long.parseLong(new String(bytes));
+            return usage;
+        }
+        catch (Exception e){
+            Log.e("E/NetStats",e.getMessage());
+        }
+        return -1;
+    }
+
+    private boolean checkFileExists(String file){
+        File f = new File(file);
+        return f.exists();
     }
 
 

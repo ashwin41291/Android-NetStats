@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -16,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 
+import com.pnikosis.materialishprogress.ProgressWheel;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,6 +41,7 @@ public class SecondFragment extends Fragment {
     private RecyclerView.Adapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
     private Persistence db;
+    private ProgressWheel wheel;
 
     public SecondFragment() {
         // Required empty public constructor
@@ -59,6 +62,9 @@ public class SecondFragment extends Fragment {
         mRecyclerView = (RecyclerView)view.findViewById(R.id.apps_list);
         mRecyclerView.setHasFixedSize(true);
 
+        wheel = (ProgressWheel)view.findViewById(R.id.progress_wheel_two);
+        wheel.setBarColor(Color.RED);
+        wheel.spin();
         // use a linear layout manager
         mLayoutManager = new LinearLayoutManager(view.getContext());
         mRecyclerView.setLayoutManager(mLayoutManager);
@@ -75,6 +81,7 @@ public class SecondFragment extends Fragment {
     private void setUsageListData(ArrayList<UsageStat> usageStats){
         UsageListAdapter adapter = new UsageListAdapter(usageStats);
         mRecyclerView.setAdapter(adapter);
+        wheel.stopSpinning();
     }
 
     private class UsageTaskRunner extends AsyncTask<Context,String,String>{
