@@ -58,7 +58,6 @@ public class NotificationMonitorService extends NotificationListenerService {
     @Override
     public void onCreate() {
         super.onCreate();
-        isNotificationAccessEnabled=true;
         Log.v("Starting","Starting NotificationMonitorService");
        // nlservicereciver = new NLServiceReceiver();
        // IntentFilter filter = new IntentFilter();
@@ -186,7 +185,7 @@ public class NotificationMonitorService extends NotificationListenerService {
                         fos.write(String.valueOf(statistic.usageInBytes).getBytes());
                         fos.close();
                     }
-                    persistence.addToDb(statistic);
+                    persistence.addToFirebase(statistic);
                     updateTimes.remove(title);
                 }
             }

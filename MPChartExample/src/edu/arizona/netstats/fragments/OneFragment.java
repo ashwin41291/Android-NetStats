@@ -20,7 +20,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SeekBar;
+import android.widget.TextView;
 
+import com.anupcowkur.reservoir.Reservoir;
+import com.anupcowkur.reservoir.ReservoirGetCallback;
+import com.anupcowkur.reservoir.ReservoirPutCallback;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.Legend;
@@ -44,6 +48,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.gson.reflect.TypeToken;
 import com.pnikosis.materialishprogress.ProgressWheel;
 
 import edu.arizona.netstats.R;
@@ -53,6 +58,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -83,7 +89,7 @@ public class OneFragment extends Fragment implements SeekBar.OnSeekBarChangeList
     private Persistence db;
     public static PackageManager managerInstance;
     private ProgressWheel wheel;
-
+    private TextView text ;
 
     public OneFragment() {
         // Required empty public constructor
@@ -103,10 +109,12 @@ public class OneFragment extends Fragment implements SeekBar.OnSeekBarChangeList
         wheel.spin();
         mRecyclerView = (RecyclerView)view.findViewById(R.id.updates_apps_list);
         mRecyclerView.setHasFixedSize(true);
+        text = (TextView)view.findViewById(R.id.display_text);
 
         // use a linear layout manager
         mLayoutManager = new LinearLayoutManager(view.getContext());
         mRecyclerView.setLayoutManager(mLayoutManager);
+
 
         AsyncTaskRunner runner = new AsyncTaskRunner();
         runner.execute(getContext());
@@ -157,6 +165,14 @@ public class OneFragment extends Fragment implements SeekBar.OnSeekBarChangeList
 
     private void updateList(ArrayList<NetworkStat> stats)
     {
+        if(stats.size()==0)
+        {
+            text.setVisibility(View.VISIBLE);
+        }
+        else
+        {
+            text.setVisibility(View.INVISIBLE);
+        }
         UpdateUsageAdapter adapter = new UpdateUsageAdapter(stats);
         mRecyclerView.setAdapter(adapter);
         wheel.stopSpinning();
@@ -171,30 +187,11 @@ public class OneFragment extends Fragment implements SeekBar.OnSeekBarChangeList
             publishProgress("Sleeping..."); // Calls onProgressUpdate()
             try {
                 // Do your long operations here and return the result
-               Context context = params[0];
+               Context context = getContext();
             stats = new ArrayList<>();
                 db = new Persistence(context);
                 PackageManager manager = context.getPackageManager();
                 List<PackageInfo> apps = manager.getInstalledPackages(PackageManager.GET_PERMISSIONS|PackageManager.GET_PROVIDERS|PackageManager.GET_META_DATA);
-//                for (PackageInfo app : apps) {
-//                    ApplicationInfo info = manager.getApplicationInfo(app.packageName,0);
-//                    if (app.requestedPermissions != null && isUserApp(info)) {
-//
-//                                Log.d("name ","App name is "+info.name);
-//                                long lastUpdateTime = manager.getPackageInfo(app.packageName, 0).lastUpdateTime;
-//                                int id = manager.getApplicationInfo(app.packageName, 0).uid;
-//                                AppObject obj = new AppObject();
-//                                obj.packageName = manager.getApplicationIcon(info).toString();
-//                                obj.appName = manager.getApplicationLabel(info).toString();
-//                                obj.applicationIcon = manager.getApplicationIcon(app.packageName);
-//                                NetworkStat stat = db.getStats(obj,app.lastUpdateTime);
-//                                stats.add(stat);
-//
-//                        }
-//                    }
-
-                // Sleeping for given time period
-           //
                 File dir = context.getFilesDir();
                 File[] files = new File(dir.getAbsolutePath()+"/netstats").listFiles();
                 if(files!=null) {
@@ -235,6 +232,7 @@ public class OneFragment extends Fragment implements SeekBar.OnSeekBarChangeList
         protected void onPostExecute(String result) {
             // execution of result of Long time consuming operation
             Collections.sort(stats,getComparator());
+
             updateList(stats);
         }
 
@@ -244,9 +242,9 @@ public class OneFragment extends Fragment implements SeekBar.OnSeekBarChangeList
             for(ApplicationInfo info:apps){
                 String label = getContext().getPackageManager().getApplicationLabel(info).toString();
                 label=label.toLowerCase();
-//                if(title.equals(label)||title.startsWith(label)){
-//                    obj.applicationIcon = getContext().getPackageManager().getApplicationIcon(info);
-//                }
+                if(title.equals(label)||title.startsWith(label)){
+                    obj.applicationIcon = getContext().getPackageManager().getApplicationIcon(info);
+                }
 
             }
             try {

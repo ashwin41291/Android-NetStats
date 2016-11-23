@@ -20,6 +20,7 @@ import android.os.Build;
 import android.os.Bundle;
 
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.anupcowkur.reservoir.Reservoir;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
@@ -76,6 +77,7 @@ public class MainActivity extends AppCompatActivity  {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
       // addDatabaseEntries();
         Intent i = new Intent(this,NotificationMonitorService.class);
         JobScheduler scheduler = (JobScheduler)this.getApplicationContext().getSystemService(JOB_SCHEDULER_SERVICE);
@@ -86,11 +88,11 @@ public class MainActivity extends AppCompatActivity  {
         JobInfo info = new JobInfo.Builder(1,serviceName).setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY).setPeriodic(300*1000).build();
        // scheduler.schedule(info);
         startService(i);
-      //  if(!NotificationMonitorService.isNotificationAccessEnabled) {
+        if(!NotificationMonitorService.isNotificationAccessEnabled) {
             Intent intent = new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS");
             startActivity(intent);
 
-        //}
+        }
         toolbar = (Toolbar) findViewById(R.id.toolbar);
 
         setSupportActionBar(toolbar);
@@ -121,8 +123,8 @@ public class MainActivity extends AppCompatActivity  {
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
 
-        tabLayout.getTabAt(1).setIcon(R.drawable.ic_update_usage);
-        tabLayout.getTabAt(0).setIcon(R.drawable.ic_time);
+        tabLayout.getTabAt(0).setIcon(R.drawable.ic_update_usage);
+        tabLayout.getTabAt(1).setIcon(R.drawable.ic_time);
       //  statusBarNotify();
     }
 
@@ -165,8 +167,8 @@ public class MainActivity extends AppCompatActivity  {
 //    }
     private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
-        adapter.addFragment(new SecondFragment(), "UPDATES");
-        adapter.addFragment(new OneFragment(), "USAGE");
+        adapter.addFragment(new OneFragment(), "UPDATES");
+        adapter.addFragment(new SecondFragment(), "USAGE");
 
         viewPager.setAdapter(adapter);
     }
