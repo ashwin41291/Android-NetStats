@@ -6,8 +6,8 @@ package netstatbackend;
 
 public class NetworkStat {
     public AppObject app;
-    public boolean isUpdate;
-    public String startTime;
+
     public String endTime;
     public double totalUsageInBytes;
+    
 }

@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.net.TrafficStats;
@@ -161,8 +162,12 @@ public class NotificationMonitorService extends NotificationListenerService {
                 int uid = manager.getApplicationInfo("com.android.providers.downloads",PackageManager.GET_META_DATA).uid;
                 Long usage = updateTimes.get(title);
                 if(usage!=null) {
+
                     long finalUsage = TrafficStats.getTotalTxBytes() + TrafficStats.getTotalRxBytes();
                     long diff = finalUsage - usage;
+                    String packName = getPackageName(title);
+                    PackageInfo packInfo = manager.getPackageInfo(packName,PackageManager.GET_META_DATA);
+                    UsageStat stat = repository.getUsageStat(packName,packInfo.lastUpdateTime,System.currentTimeMillis());
                    NetworkStatistic statistic = new NetworkStatistic();
                     statistic.appName = title;
                     statistic.usageInBytes = diff;
@@ -185,7 +190,16 @@ public class NotificationMonitorService extends NotificationListenerService {
                         fos.write(String.valueOf(statistic.usageInBytes).getBytes());
                         fos.close();
                     }
+
+                    File usageDir= new File(dir.getAbsolutePath()+"/usageFiles");
+                    if(!usageDir.exists())
+                        usageDir.mkdir();
+                    FileOutputStream usagefos = new FileOutputStream(usageDir.getAbsolutePath()+"/"+title);
+                    usagefos.write(String.valueOf(stat.foregroundEvents).getBytes());
+                    usagefos.close();
+                    statistic.foregroundEvents = stat.foregroundEvents;
                     persistence.addToFirebase(statistic);
+
                     updateTimes.remove(title);
                 }
             }
@@ -193,6 +207,19 @@ public class NotificationMonitorService extends NotificationListenerService {
         catch (Exception e){
             Log.e("Error",e.getMessage());
         }
+    }
+
+    private String getPackageName(String title) {
+        PackageManager manager = getPackageManager();
+        List<ApplicationInfo> packages = manager.getInstalledApplications(PackageManager.GET_META_DATA);
+        for(ApplicationInfo pack:packages){
+            String appName = manager.getApplicationLabel(pack).toString();
+            if(title.equals(appName)||title.startsWith(appName))
+            {
+                return pack.packageName;
+            }
+        }
+        return null;
     }
 
     private long readFile(String file) {
