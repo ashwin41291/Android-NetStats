@@ -88,11 +88,11 @@ public class MainActivity extends AppCompatActivity  {
         JobInfo info = new JobInfo.Builder(1,serviceName).setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY).setPeriodic(300*1000).build();
        // scheduler.schedule(info);
         startService(i);
-        if(!NotificationMonitorService.isNotificationAccessEnabled) {
+     //   if(!NotificationMonitorService.isNotificationAccessEnabled) {
             Intent intent = new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS");
             startActivity(intent);
 
-        }
+       // }
         toolbar = (Toolbar) findViewById(R.id.toolbar);
 
         setSupportActionBar(toolbar);

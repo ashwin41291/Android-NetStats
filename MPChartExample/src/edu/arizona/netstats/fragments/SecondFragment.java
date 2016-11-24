@@ -88,8 +88,11 @@ public class SecondFragment extends Fragment {
 
 //        AsyncTaskRunner task = new AsyncTaskRunner();
 //        task.execute(view.getContext());
-
-      
+        wheel = (ProgressWheel)view.findViewById(R.id.progress_wheel_two);
+        wheel.setBarColor(Color.RED);
+        wheel.spin();
+      UsageDataRetriever retriever = new UsageDataRetriever();
+        retriever.execute(getContext());
 
 
     }
@@ -112,6 +115,7 @@ public class SecondFragment extends Fragment {
         @Override
         protected String doInBackground(Context... params) {
             Context ctxt = params[0];
+            uStats = new ArrayList<>();
             File dir = new File(getContext().getFilesDir().getAbsolutePath()+"/usageFiles");
             try {
                 if (dir.exists()) {
