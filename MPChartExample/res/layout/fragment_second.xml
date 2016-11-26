@@ -20,4 +20,16 @@
         wheel:matProg_barColor="#5588FF"
         wheel:matProg_progressIndeterminate="true" />
 
+    <TextView
+        android:id="@+id/display_text_second"
+        android:layout_width="match_parent"
+        android:layout_height="100px"
+        android:layout_centerInParent="true"
+        android:textAlignment="center"
+        android:text="No update data to display"
+        android:gravity="center"
+        android:textColor="#000000"
+
+        android:textSize="80px"/>
+
 </RelativeLayout>

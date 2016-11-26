@@ -104,7 +104,7 @@ public class NotificationMonitorService extends NotificationListenerService {
 //                    }
 //
 //            }
-            if(pack.equals("com.android.providers.downloads") && progress==0) {
+            if(pack.equals("com.android.providers.downloads")) {
                 long currentTime = System.currentTimeMillis();
                 long usage = TrafficStats.getTotalTxBytes() + TrafficStats.getTotalRxBytes();
                 if(!updateTimes.containsKey(title)){
@@ -157,7 +157,7 @@ public class NotificationMonitorService extends NotificationListenerService {
 //                    }
 //                }
 //            }
-            if(packageName.equals("com.android.providers.downloads")){
+            if(packageName.equals("com.android.providers.downloads") && progress>=75){
                 PackageManager manager = getPackageManager();
                 int uid = manager.getApplicationInfo("com.android.providers.downloads",PackageManager.GET_META_DATA).uid;
                 Long usage = updateTimes.get(title);
@@ -198,6 +198,9 @@ public class NotificationMonitorService extends NotificationListenerService {
                     usagefos.write(String.valueOf(stat.foregroundEvents).getBytes());
                     usagefos.close();
                     statistic.foregroundEvents = stat.foregroundEvents;
+                    statistic.startDate = packInfo.lastUpdateTime;
+                    statistic.endDate = System.currentTimeMillis();
+                    statistic.uid = manager.getApplicationInfo(packInfo.packageName,PackageManager.GET_META_DATA).uid;
                     persistence.addToFirebase(statistic);
 
                     updateTimes.remove(title);

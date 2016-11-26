@@ -16,6 +16,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 
 import com.anupcowkur.reservoir.Reservoir;
@@ -24,6 +25,8 @@ import com.anupcowkur.reservoir.ReservoirPutCallback;
 import com.google.gson.reflect.TypeToken;
 import com.pnikosis.materialishprogress.ProgressWheel;
 import com.vincentbrison.openlibraries.android.dualcache.Builder;
+
+import org.w3c.dom.Text;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -61,6 +64,7 @@ public class SecondFragment extends Fragment {
     private ProgressWheel wheel;
     private ArrayList<UsageStat> usageStats;
     private ArrayList<ApplicationInfo> apps;
+    private TextView displayText;
 
     public SecondFragment() {
         // Required empty public constructor
@@ -91,6 +95,8 @@ public class SecondFragment extends Fragment {
         wheel = (ProgressWheel)view.findViewById(R.id.progress_wheel_two);
         wheel.setBarColor(Color.RED);
         wheel.spin();
+
+        displayText = (TextView)view.findViewById(R.id.display_text_second);
       UsageDataRetriever retriever = new UsageDataRetriever();
         retriever.execute(getContext());
 
@@ -102,6 +108,14 @@ public class SecondFragment extends Fragment {
 
     private void setUsageListData(ArrayList<UsageStat> usageStats){
         this.usageStats = usageStats;
+        if(usageStats.size()==0){
+            displayText.setVisibility(View.VISIBLE);
+            displayText.setText("No app usage data between 2 " +
+                    "updates.");
+        }
+        else{
+            displayText.setVisibility(View.INVISIBLE);
+        }
         UsageListAdapter adapter = new UsageListAdapter(usageStats);
         mRecyclerView.setAdapter(adapter);
         wheel.stopSpinning();

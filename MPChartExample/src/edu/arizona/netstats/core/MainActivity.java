@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity  {
 
         setSupportActionBar(toolbar);
         requestPermissions();
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(false);
 
 
         viewPager = (ViewPager) findViewById(R.id.viewpager);
@@ -108,11 +108,10 @@ public class MainActivity extends AppCompatActivity  {
             public void onClick(View v){
                 new MaterialDialog.Builder(v.getContext())
                         .title("NetStats")
-                        .content("The goal behind NetStats was to explore and quantify the data used by applications in updates. These days, " +
+                        .content("The goal behind NetStats was to explore and quantify the data used by applications between 2 updates. These days, " +
                                 "an average Android user has several apps that are rarely or not used at all. But due to automatic updates being enabled at a global level," +
-                                "these unused apps consume data. \n\nWe offer the user two views of usage - firstly, the data consumption by apps due to updates and secondly the number of events" +
-                                "by apps in the foreground since their last update. Both these statistics can used to suggest or inform the user about apps for which updates can be" +
-                                " disabled.\n\n Developed by Sridhar & Aswin under the guidance of Dr. Chris Gniady, University of Arizona.\n\n " +
+                                "these unused apps consume data. We use this tool to gather data consumed by applications for updates and the usage statistics between two updates"+
+                                ", which can be used to .\n\n Developed by Sridhar & Aswin under the guidance of Dr. Chris Gniady, University of Arizona.\n\n " +
                                 "Credits: Icons made by Freepik,Madebyoliver from www.flaticon.com \n" +
                                 "\n" +
                                 "")
