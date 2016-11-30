@@ -88,11 +88,11 @@ public class MainActivity extends AppCompatActivity  {
         JobInfo info = new JobInfo.Builder(1,serviceName).setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY).setPeriodic(300*1000).build();
        // scheduler.schedule(info);
         startService(i);
-     //   if(!NotificationMonitorService.isNotificationAccessEnabled) {
+        if(!NotificationMonitorService.isNotificationAccessEnabled) {
             Intent intent = new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS");
             startActivity(intent);
 
-       // }
+        }
         toolbar = (Toolbar) findViewById(R.id.toolbar);
 
         setSupportActionBar(toolbar);
@@ -111,8 +111,8 @@ public class MainActivity extends AppCompatActivity  {
                         .content("The goal behind NetStats was to explore and quantify the data used by applications between 2 updates. These days, " +
                                 "an average Android user has several apps that are rarely or not used at all. But due to automatic updates being enabled at a global level," +
                                 "these unused apps consume data. We use this tool to gather data consumed by applications for updates and the usage statistics between two updates"+
-                                ", which can be used to .\n\n Developed by Sridhar & Aswin under the guidance of Dr. Chris Gniady, University of Arizona.\n\n " +
-                                "Credits: Icons made by Freepik,Madebyoliver from www.flaticon.com \n" +
+                                ", which can be used to stop updates for apps which have not been used between those updates.\n\n Developed by Sridhar & Aswin under the guidance of Dr. Chris Gniady, University of Arizona.\n\n " +
+                                "Credits: Icons made by Freepik, Madebyoliver from www.flaticon.com \n" +
                                 "\n" +
                                 "")
                         .show();

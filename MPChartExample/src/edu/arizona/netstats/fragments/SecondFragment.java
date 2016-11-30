@@ -110,8 +110,8 @@ public class SecondFragment extends Fragment {
         this.usageStats = usageStats;
         if(usageStats.size()==0){
             displayText.setVisibility(View.VISIBLE);
-            displayText.setText("No app usage data between 2 " +
-                    "updates.");
+           // displayText.setText("No app usage data between 2 " +
+             //       "updates.");
         }
         else{
             displayText.setVisibility(View.INVISIBLE);
@@ -164,7 +164,7 @@ public class SecondFragment extends Fragment {
             List<ApplicationInfo> apps = manager.getInstalledApplications(PackageManager.GET_META_DATA);
             for(ApplicationInfo info:apps){
                 String label = manager.getApplicationLabel(info).toString();
-                if(label.equals(appTitle)||appTitle.startsWith(label)){
+                if(appTitle.equals(label)||appTitle.startsWith(label)){
                     return manager.getApplicationIcon(info);
                 }
             }
