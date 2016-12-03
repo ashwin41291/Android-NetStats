@@ -11,7 +11,7 @@ public class NetworkStatistic implements Comparable<NetworkStatistic>{
     public long startDate;
     public long endDate;
     public String packageName;
-    public int foregroundEvents;
+    public boolean isUseful;
 
     @Override
     public int compareTo(NetworkStatistic networkStatistic) {

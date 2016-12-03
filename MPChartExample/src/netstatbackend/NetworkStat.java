@@ -9,5 +9,9 @@ public class NetworkStat {
 
     public String endTime;
     public double totalUsageInBytes;
+
+    public int uselessUpdates;
+    public int totalUpdates;
+
     
 }

@@ -196,24 +196,41 @@ public class OneFragment extends Fragment implements SeekBar.OnSeekBarChangeList
                 File[] files = new File(dir.getAbsolutePath()+"/netstats").listFiles();
                 if(files!=null) {
                     for (File f : files) {
-                        String name = f.getName();
-                        if (f.isFile()) {
-                            FileInputStream fis = new FileInputStream(f);
-                            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                            byte[] b = new byte[1024];
-                            int bytesRead;
-                            while ((bytesRead = fis.read(b)) != -1) {
-                                bos.write(b, 0, bytesRead);
+                        String appName = f.getName();
+                        int uselessUpdates = 0;
+                        int totalUpdates = 0;
+                        long updateUsage = 0;
+                        if(f.isDirectory())
+                        {
+                            File[] updates = new File(f.getAbsolutePath()).listFiles();
+                            for(File updateFile:updates)
+                            {
+                                totalUpdates++;
+                                if(updateFile.getName().contains("useless"))
+                                {
+                                    uselessUpdates++;
+                                    FileInputStream fis = new FileInputStream(updateFile);
+                                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                                    byte[] b = new byte[1024];
+                                    int bytesRead;
+                                    while ((bytesRead = fis.read(b)) != -1) {
+                                        bos.write(b, 0, bytesRead);
+                                    }
+                                    byte[] bytes = bos.toByteArray();
+                                    long usage = Long.parseLong(new String(bytes));
+                                    updateUsage += usage;
+                                }
                             }
-                            byte[] bytes = bos.toByteArray();
-                            long usage = Long.parseLong(new String(bytes));
-                            NetworkStat statistic = new NetworkStat();
-                            statistic.app = new AppObject();
-                            statistic.totalUsageInBytes = usage;
-                            statistic.app.appName = name;
-                            getIconByAppLabel(name,statistic.app);
-                            stats.add(statistic);
                         }
+                        NetworkStat stat = new NetworkStat();
+                        stat.app = new AppObject();
+                        stat.app.appName = appName;
+                        getIconByAppLabel(appName,stat.app);
+                        stat.totalUpdates = totalUpdates;
+                        stat.uselessUpdates = uselessUpdates;
+                        stat.totalUsageInBytes = updateUsage;
+                        stats.add(stat);
+
                     }
                 }
             } catch (Exception e) {

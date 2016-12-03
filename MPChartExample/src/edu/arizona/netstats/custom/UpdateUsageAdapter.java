@@ -8,6 +8,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.w3c.dom.Text;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
@@ -30,11 +32,13 @@ public class UpdateUsageAdapter extends RecyclerView.Adapter<UpdateUsageAdapter.
         public TextView appName;
         public ImageView icon;
         public TextView usage;
+        public TextView updatesCount;
         public ViewHolder(View v) {
             super(v);
             appName = (TextView)v.findViewById(R.id.app_update_name);
             icon = (ImageView)v.findViewById(R.id.app_update_icon);
             usage = (TextView)v.findViewById(R.id.app_update_usage);
+            updatesCount = (TextView)v.findViewById(R.id.app_useless_updates);
         }
     }
 
@@ -74,6 +78,7 @@ public class UpdateUsageAdapter extends RecyclerView.Adapter<UpdateUsageAdapter.
                 .setScale(3, RoundingMode.HALF_UP)
                 .doubleValue();
         holder.usage.setText(String.valueOf(truncatedDouble)+" MB");
+        holder.updatesCount.setText(String.valueOf(obj.uselessUpdates)+"/"+String.valueOf(obj.totalUpdates));
     }
 
     // Return the size of your dataset (invoked by the layout manager)

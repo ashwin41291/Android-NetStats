@@ -108,10 +108,8 @@ public class MainActivity extends AppCompatActivity  {
             public void onClick(View v){
                 new MaterialDialog.Builder(v.getContext())
                         .title("NetStats")
-                        .content("The goal behind NetStats was to explore and quantify the data used by applications between 2 updates. These days, " +
-                                "an average Android user has several apps that are rarely or not used at all. But due to automatic updates being enabled at a global level," +
-                                "these unused apps consume data. We use this tool to gather data consumed by applications for updates and the usage statistics between two updates"+
-                                ", which can be used to stop updates for apps which have not been used between those updates.\n\n Developed by Sridhar & Aswin under the guidance of Dr. Chris Gniady, University of Arizona.\n\n " +
+                        .content("NetStats helps you identify the number of \"wasted\" updates based on the app usage between any two updates. The app lists the cumulative data wasted across such updates and" +
+                                "the total number of such useless updates out of the overall updates for each app.\n\n Developed by Sridhar & Aswin under the guidance of Dr. Chris Gniady, University of Arizona.\n\n " +
                                 "Credits: Icons made by Freepik, Madebyoliver from www.flaticon.com \n" +
                                 "\n" +
                                 "")
@@ -121,9 +119,11 @@ public class MainActivity extends AppCompatActivity  {
 
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
+        tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
+        tabLayout.setTabMode(TabLayout.MODE_FIXED);
 
         tabLayout.getTabAt(0).setIcon(R.drawable.ic_update_usage);
-        tabLayout.getTabAt(1).setIcon(R.drawable.ic_time);
+      //  tabLayout.getTabAt(1).setIcon(R.drawable.ic_time);
       //  statusBarNotify();
     }
 
@@ -167,7 +167,7 @@ public class MainActivity extends AppCompatActivity  {
     private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
         adapter.addFragment(new OneFragment(), "UPDATES");
-        adapter.addFragment(new SecondFragment(), "USAGE");
+     //   adapter.addFragment(new SecondFragment(), "USAGE");
 
         viewPager.setAdapter(adapter);
     }

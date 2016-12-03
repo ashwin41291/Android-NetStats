@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by sridh on 10/21/2016.
@@ -177,30 +178,24 @@ public class NotificationMonitorService extends NotificationListenerService {
                     File appFiles = new File(dir.getAbsolutePath()+"/netstats");
                     if(!appFiles.exists())
                         appFiles.mkdir();
-                    if(checkFileExists(dir.getAbsolutePath()+"/netstats/"+title))
+                    File appDir = new File(appFiles.getAbsolutePath()+"/"+title);
+                    if(!appDir.exists())
+                        appDir.mkdir();
+                    FileOutputStream fos=null;
+                    if(stat.foregroundEvents==0)
                     {
-                        long value = readFile(dir.getAbsolutePath()+"/netstats/"+title);
-                        FileOutputStream fos = new FileOutputStream(dir.getAbsolutePath() + "/netstats/" + title);
-                        fos.write(String.valueOf(value+statistic.usageInBytes).getBytes());
-                        statistic.usageInBytes = statistic.usageInBytes+value;
-                        fos.close();
+                        fos = new FileOutputStream(appDir.getAbsolutePath()+"/"+UUID.randomUUID().toString()+"_useless");
+                        statistic.isUseful = false;
                     }
-                    else {
-                        FileOutputStream fos = new FileOutputStream(dir.getAbsolutePath() + "/netstats/" + title);
-                        fos.write(String.valueOf(statistic.usageInBytes).getBytes());
-                        fos.close();
+                    else
+                    {
+                        fos = new FileOutputStream(appDir.getAbsolutePath()+"/"+UUID.randomUUID().toString());
+                        statistic.isUseful=true;
                     }
-
-                    File usageDir= new File(dir.getAbsolutePath()+"/usageFiles");
-                    if(!usageDir.exists())
-                        usageDir.mkdir();
-                    FileOutputStream usagefos = new FileOutputStream(usageDir.getAbsolutePath()+"/"+title);
-                    usagefos.write(String.valueOf(stat.foregroundEvents).getBytes());
-                    usagefos.close();
-                    statistic.foregroundEvents = stat.foregroundEvents;
                     statistic.startDate = packInfo.lastUpdateTime;
                     statistic.endDate = System.currentTimeMillis();
-                    statistic.uid = manager.getApplicationInfo(packInfo.packageName,PackageManager.GET_META_DATA).uid;
+                    fos.write(String.valueOf(statistic.usageInBytes).getBytes());
+
                     persistence.addToFirebase(statistic);
 
                     updateTimes.remove(title);

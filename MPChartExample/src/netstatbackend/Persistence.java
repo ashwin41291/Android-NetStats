@@ -13,6 +13,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
 /**
  * Created by sridh on 10/21/2016.
@@ -88,7 +89,9 @@ public class Persistence {
             DatabaseReference ref = database.getReference("netstats");
             DatabaseReference child = ref.child(android_id);
             DatabaseReference app = child.child(stat.appName);
-            app.setValue(stat);
+            DatabaseReference update = app.child(UUID.randomUUID().toString());
+
+            update.setValue(stat);
         }
         catch (Exception e){
             Log.e("Test",e.getMessage());
